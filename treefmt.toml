@@ -1,0 +1,24 @@
+excludes = [
+	"*.lock",
+]
+
+[formatter.dprint]
+command = "dprint"
+excludes = []
+includes = [
+	"*.ts",
+	"*.tsx",
+	"*.css",
+	"*.html",
+	"*.yaml",
+	"*.toml",
+	"*.json",
+	"*.md",
+]
+options = ["fmt"]
+
+[formatter.alejandra]
+command = "alejandra"
+excludes = []
+includes = ["*.nix"]
+options = []
