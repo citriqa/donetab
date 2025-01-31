@@ -1,0 +1,9 @@
+{
+	"recommendations": [
+		"EditorConfig.EditorConfig",
+		"ibecker.treefmt-vscode",
+		"jnoortheen.nix-ide",
+		"mkhl.direnv",
+		"tamasfe.even-better-toml"
+	]
+}

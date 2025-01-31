@@ -1,0 +1,4 @@
+{
+	"nix.formatterPath": "alejandra",
+	"editor.defaultFormatter": "ibecker.treefmt-vscode"
+}
