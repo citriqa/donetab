@@ -10,3 +10,10 @@ devenv.local.nix
 
 # node
 node_modules
+
+# wxt
+.output
+stats.html
+stats-*.json
+.wxt
+web-ext.config.ts

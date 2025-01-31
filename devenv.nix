@@ -31,8 +31,11 @@ in {
 		[
 			pkgs.treefmt
 			pkgs.dprint
+			pkgs.firefox
 		]
 		++ formatters;
+
+	env.CHROME_PATH = "${pkgs.chromium}/bin/chromium";
 
 	languages.javascript = {
 		enable = true;
