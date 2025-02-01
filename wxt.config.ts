@@ -11,4 +11,5 @@ export default defineConfig({
 			eslint({ "dev": false }),
 		] as WxtViteConfig["plugins"],
 	}),
+	imports: false,
 });
