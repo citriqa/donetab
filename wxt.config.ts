@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import eslint from "vite-plugin-eslint2";
 import { defineConfig, WxtViteConfig } from "wxt";
 
@@ -18,6 +19,7 @@ export default defineConfig({
 	vite: () => ({
 		plugins: [
 			eslint({ "dev": false }),
+			tailwindcss(),
 		] as WxtViteConfig["plugins"],
 	}),
 	imports: false,

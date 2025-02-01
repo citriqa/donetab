@@ -1,4 +1,10 @@
 {
 	"nix.formatterPath": "alejandra",
-	"editor.defaultFormatter": "ibecker.treefmt-vscode"
+	"editor.defaultFormatter": "ibecker.treefmt-vscode",
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"editor.quickSuggestions": {
+		"strings": "on"
+	}
 }

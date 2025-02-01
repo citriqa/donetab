@@ -5,6 +5,7 @@
 		"jnoortheen.nix-ide",
 		"mkhl.direnv",
 		"tamasfe.even-better-toml",
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"bradlc.vscode-tailwindcss"
 	]
 }
