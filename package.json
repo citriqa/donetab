@@ -30,10 +30,13 @@
 		"wxt": "^0.19.26"
 	},
 	"dependencies": {
+		"image-resize-compress": "~1.1.0",
 		"react": "^19.0.0",
-		"react-dom": "^19.0.0"
+		"react-dom": "^19.0.0",
+		"remeda": "^2.20.0"
 	},
 	"dependencyComments": {
+		"image-resize-compress": "version 2 returns string | ArrayBuffer instead of just string from blobToURL",
 		"jiti": "required for eslint to handle a .ts config file"
 	}
 }
