@@ -1,4 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
+import Icons from "unplugin-icons/vite";
 import eslint from "vite-plugin-eslint2";
 import { defineConfig, WxtViteConfig } from "wxt";
 
@@ -20,6 +21,7 @@ export default defineConfig({
 		plugins: [
 			eslint({ "dev": false }),
 			tailwindcss(),
+			Icons({ compiler: "jsx", jsx: "react" }),
 		] as WxtViteConfig["plugins"],
 	}),
 	imports: false,

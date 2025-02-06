@@ -17,6 +17,9 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.19.0",
+		"@iconify-json/mingcute": "^1.2.3",
+		"@svgr/core": "^8.1.0",
+		"@svgr/plugin-jsx": "^8.1.0",
 		"@tailwindcss/vite": "^4.0.2",
 		"@types/chrome": "^0.0.300",
 		"@types/react": "^19.0.8",
@@ -29,6 +32,7 @@
 		"tailwindcss": "*",
 		"typescript": "^5.7.3",
 		"typescript-eslint": "^8.22.0",
+		"unplugin-icons": "^22.0.0",
 		"vite-plugin-eslint2": "^5.0.3",
 		"wxt": "^0.19.26"
 	},
