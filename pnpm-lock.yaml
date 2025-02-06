@@ -42,6 +42,9 @@ importers:
       '@wxt-dev/module-react':
         specifier: ^1.1.3
         version: 1.1.3(vite@6.0.8(@types/node@22.13.0)(jiti@2.4.2)(lightningcss@1.29.1))(wxt@0.19.26(@types/node@22.13.0)(lightningcss@1.29.1)(rollup@4.32.1))
+      daisyui:
+        specifier: 5.0.0-beta.7
+        version: 5.0.0-beta.7
       eslint:
         specifier: ^9.19.0
         version: 9.19.0(jiti@2.4.2)
@@ -1895,6 +1898,9 @@ packages:
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
+
+  daisyui@5.0.0-beta.7:
+    resolution: {integrity: sha512-AW158KxukhyWwU9HTlfNkjAa9nPcfUZilITK7Taa3pqwVH/Suq31+1FHVcw7zLVRRw5jBUKrJ76xBQJOcRiKgQ==}
 
   data-view-buffer@1.0.2:
     resolution: {integrity: sha512-EmKO5V3OLXh1rtK2wgXRansaK1/mtVdTUEiEI0W8RkvgT05kfxaH29PliLnpLP73yYO6142Q72QNa8Wx/A5CqQ==}
@@ -5896,6 +5902,8 @@ snapshots:
   cssom@0.5.0: {}
 
   csstype@3.1.3: {}
+
+  daisyui@5.0.0-beta.7: {}
 
   data-view-buffer@1.0.2:
     dependencies:
