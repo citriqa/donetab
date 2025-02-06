@@ -1,0 +1,7 @@
+@utility shrink-max {
+	flex-shrink: 100000;
+}
+
+@utility grow-max {
+	flex-grow: 100000;
+}

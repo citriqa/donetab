@@ -1,6 +1,7 @@
 import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
-import { EXTENSION_FOLDER_NAME, LIST_URL } from "./constants";
+import { EXTENSION_FOLDER_NAME, LIST_URL, RESTORE_ANCHOR } from "./constants";
+import { retryPromise, returnvoid } from "./generic";
 
 export async function extensionFolderId() {
 	function newFolder() {
@@ -103,4 +104,138 @@ export async function saveWindow() {
 	} else {
 		closeWindow();
 	}
+}
+
+function getProps(bookmark: chrome.bookmarks.BookmarkTreeNode) {
+	return R.pick(bookmark, ["title", "id", "dateAdded", "url"]);
+}
+
+export async function getWindows() {
+	const storage = await extensionFolderId();
+	const windowBookmarks = await retryPromise(async () => chrome.bookmarks.getChildren(storage));
+	const windowProps = await Promise.all(windowBookmarks.map(getProps));
+	return R.sortBy(windowProps, w => w.dateAdded || 0).reverse();
+}
+
+export async function isInTree(id: string | undefined, tree?: string) {
+	const extension_folder_id = extensionFolderId();
+	while (id !== undefined) {
+		if (id === (tree || await extension_folder_id)) {
+			return true;
+		} else {
+			id = R.only(await chrome.bookmarks.get(id))?.parentId;
+		}
+	}
+	return false;
+}
+
+export async function renameWindow(id: string, title: string) {
+	return chrome.bookmarks.update(id, { title });
+}
+
+async function splitTabsAndIcons(folder: string) {
+	function isIconFolder(bookmark: chrome.bookmarks.BookmarkTreeNode) {
+		return bookmark.url === undefined && bookmark.title === "favicons";
+	}
+	const children = await retryPromise(async () => chrome.bookmarks.getChildren(folder));
+	const [iconFolderCandidates, tabs] = R.partition(children, isIconFolder);
+	return { tabs, iconFolder: R.only(iconFolderCandidates) };
+}
+
+async function getTabsAndIcons(
+	folder: string,
+): Promise<{ tabs: chrome.bookmarks.BookmarkTreeNode[]; icons: Map<string, string | undefined> }> {
+	const { tabs, iconFolder } = await splitTabsAndIcons(folder);
+	if (iconFolder) {
+		const icons = new Map(
+			(await retryPromise(async () => chrome.bookmarks.getChildren(iconFolder.id))).map(
+				bookmark => [bookmark.title, bookmark.url],
+			),
+		);
+		return { tabs, icons };
+	} else {
+		return { tabs, icons: new Map() };
+	}
+}
+
+export async function deleteTabsFrom(tabIds: string[], windowId: string): Promise<Array<void>> {
+	const { tabs, iconFolder } = await splitTabsAndIcons(windowId);
+	if ((new Set(tabIds)).intersection(new Set(tabs.map(tab => tab.id))).size === tabs.length) {
+		return deleteWindowExcept(windowId);
+	} else {
+		if (iconFolder !== undefined) {
+			const icons = chrome.bookmarks.getChildren(iconFolder.id);
+			return Promise.all(tabIds.map(async tabId => {
+				await chrome.bookmarks.remove(tabId);
+				void icons.then(async icons => {
+					const icon = R.only(icons.filter(bookmark => bookmark.title === tabId));
+					if (icon !== undefined) {
+						await chrome.bookmarks.remove(icon.id);
+					}
+				});
+			}));
+		} else {
+			return Promise.all(tabIds.map(async tabId => {
+				await chrome.bookmarks.remove(tabId);
+			}));
+		}
+	}
+}
+
+export async function deleteWindowExcept(windowId: string, tabIds?: string[]) {
+	if (!tabIds?.length) {
+		return Promise.all([chrome.bookmarks.removeTree(windowId)]);
+	} else {
+		const { tabs } = await splitTabsAndIcons(windowId);
+		const tabsToDelete = (new Set(tabs.map(tab => tab.id))).difference(new Set(tabIds)).values().toArray();
+		return deleteTabsFrom(tabsToDelete, windowId);
+	}
+}
+
+function addRestoreAnchor(url: string): string {
+	const [baseUrl, existingAnchor] = url.split("#");
+	return baseUrl + RESTORE_ANCHOR + (existingAnchor ? "-" + existingAnchor : "");
+}
+
+export async function restoreWindow(windowFolder: string) {
+	const tabs = (await getTabsAndIcons(windowFolder)).tabs;
+	const urls = tabs
+		.filter(tab => tab.url !== undefined && openableURL(tab.url))
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- impossible thanks to the filter above
+		.map(tab => addRestoreAnchor(tab.url!));
+
+	urls.unshift(LIST_URL);
+	await chrome.windows.create({
+		focused: true,
+		url: urls,
+	});
+
+	void deleteWindowExcept(windowFolder);
+}
+
+export function subscribeToFolder(folderId: string, callback: () => void) {
+	const existEvents = [chrome.bookmarks.onCreated, chrome.bookmarks.onChanged] as const;
+
+	const existsListener = returnvoid(async (bookmarkId: string) => {
+		if (await isInTree(bookmarkId, folderId)) {
+			callback();
+		}
+	});
+	existEvents.forEach((event_type) => {
+		event_type.addListener(existsListener);
+	});
+
+	const deletedListener = (bookmarkId: string, removeInfo: chrome.bookmarks.BookmarkRemoveInfo) => {
+		if (removeInfo.parentId === folderId) {
+			callback();
+		}
+	};
+	chrome.bookmarks.onRemoved.addListener(deletedListener);
+
+	return () => {
+		existEvents.forEach((event_type) => {
+			event_type.removeListener(existsListener);
+		});
+		chrome.bookmarks.onRemoved.removeListener(deletedListener);
+	};
 }

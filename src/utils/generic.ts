@@ -5,3 +5,12 @@ export function returnvoid<P extends unknown[], R>(fn: (...args: P) => Promise<R
 		void fn(...args);
 	};
 }
+
+// retries promise until it doesn't return undefined
+export async function retryPromise<A>(fn: () => Promise<A | undefined>): Promise<A> {
+	let result: A | undefined;
+	do {
+		result = await fn();
+	} while (result === undefined);
+	return result;
+}
