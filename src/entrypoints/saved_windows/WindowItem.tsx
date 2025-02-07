@@ -4,7 +4,7 @@ import { deleteWindowExcept, getWindows, renameWindow, restoreWindow } from "@/u
 import { unpropagated } from "@/utils/components";
 import { returnvoid } from "@/utils/generic";
 import { Accordion } from "radix-ui";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import MingcuteBroomLine from "~icons/mingcute/broom-line";
 import MingcuteCheckLine from "~icons/mingcute/check-line";
 import MingcuteDownLine from "~icons/mingcute/down-line";
@@ -20,7 +20,7 @@ export default function WindowItem(
 		void renameWindow(data.id, titleInput.current.value);
 		toggleTitleEditable();
 	}
-	const pinnedTabs = useRef<string[]>([]);
+	const [pinnedTabs, setPinnedTabs] = useState<string[]>([]);
 	const [isTitleEditable, toggleTitleEditable] = useToggle(false);
 	const titleInput = useRef<HTMLInputElement>(null);
 
@@ -93,9 +93,9 @@ export default function WindowItem(
 							onClick={returnvoid(async () => {
 								await deleteWindowExcept(
 									data.id,
-									pinnedTabs.current,
+									pinnedTabs,
 								);
-								pinnedTabs.current = [];
+								setPinnedTabs([]);
 							})}
 							title="Remove all unprotected tabs from window"
 							className="join-item btn btn-soft btn-error icon-button flex-wrap overflow-hidden shrink"
@@ -119,7 +119,7 @@ export default function WindowItem(
 			<Accordion.Content className="overflow-hidden">
 				<TabList
 					windowId={data.id}
-					pinnedTabs={pinnedTabs}
+					pinned={[pinnedTabs, setPinnedTabs]}
 				/>
 			</Accordion.Content>
 		</Accordion.Item>

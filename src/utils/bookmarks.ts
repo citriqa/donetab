@@ -239,3 +239,10 @@ export function subscribeToFolder(folderId: string, callback: () => void) {
 		chrome.bookmarks.onRemoved.removeListener(deletedListener);
 	};
 }
+
+export async function getTabs(windowId: string) {
+	const { tabs, icons } = await getTabsAndIcons(windowId);
+	return tabs.map(tab =>
+		Object.assign(getProps(tab), { icon: icons.get(tab.id) } satisfies { icon: string | undefined })
+	);
+}

@@ -21,3 +21,16 @@
 		--root-bg: var(--color-base-300);
 	}
 }
+
+@theme {
+	--color-base-150: color-mix(
+		in oklab,
+		var(--color-base-100) 75%,
+		var(--color-base-200)
+	);
+	--color-error-bg: color-mix(
+		in oklab,
+		var(--color-error) 8%,
+		var(--color-base-100)
+	);
+}
