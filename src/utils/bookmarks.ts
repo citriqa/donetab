@@ -1,6 +1,7 @@
 import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
-import { EXTENSION_FOLDER_NAME, LIST_URL, RESTORE_ANCHOR } from "./constants";
+import { LIST_URL } from "./calculated_constants";
+import { EXTENSION_FOLDER_NAME, RESTORE_ANCHOR } from "./constants";
 import { retryPromise, returnvoid } from "./generic";
 
 export async function extensionFolderId() {

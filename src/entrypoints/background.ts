@@ -1,5 +1,6 @@
 import { saveWindow } from "@/utils/bookmarks";
-import { DOUBLECLICK_INTERVAL_MS, LIST_URL } from "@/utils/constants";
+import { LIST_URL } from "@/utils/calculated_constants";
+import { DOUBLECLICK_INTERVAL_MS, PAGE_LOADED } from "@/utils/constants";
 import { returnvoid } from "@/utils/generic";
 import { defineBackground } from "wxt/sandbox";
 
@@ -10,6 +11,15 @@ export default defineBackground(() => {
 			returnvoid(showSavedWindows),
 		),
 	);
+
+	chrome.runtime.onMessage.addListener((message: unknown, sender) => {
+		if (message === PAGE_LOADED && sender.tab?.id) {
+			chrome.tabs.discard(sender.tab.id)
+				.catch((error: unknown) => {
+					console.error("[DoneTab] Failed to discard tab:", error);
+				});
+		}
+	});
 });
 
 function showSavedWindows() {
