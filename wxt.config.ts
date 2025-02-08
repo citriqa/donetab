@@ -16,7 +16,10 @@ export default defineConfig({
 	},
 	extensionApi: "chrome",
 	srcDir: "src",
-	modules: ["@wxt-dev/module-react"],
+	modules: [
+		"@wxt-dev/module-react",
+		"@wxt-dev/auto-icons",
+	],
 	vite: () => ({
 		plugins: [
 			eslint({ "dev": false }),
