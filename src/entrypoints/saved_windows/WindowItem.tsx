@@ -73,7 +73,7 @@ export default function WindowItem(
 								}
 							})}
 							title={isTitleEditable ? "Save the window name" : "Edit the window name"}
-							className="join-item btn btn-soft icon-button flex-wrap overflow-hidden shrink"
+							className="join-item btn btn-secondary not-dark:btn-soft icon-button flex-wrap overflow-hidden shrink"
 						>
 							{isTitleEditable
 								? (
@@ -98,7 +98,7 @@ export default function WindowItem(
 								setPinnedTabs([]);
 							})}
 							title="Remove all unprotected tabs from window"
-							className="join-item btn btn-soft btn-error icon-button flex-wrap overflow-hidden shrink"
+							className="join-item btn not-dark:btn-soft [--depth:1.5] btn-error icon-button flex-wrap overflow-hidden shrink"
 						>
 							<>
 								<MingcuteBroomLine className="h-full" />
@@ -108,7 +108,7 @@ export default function WindowItem(
 						<button
 							onClick={unpropagated(returnvoid(() => restoreWindow(data.id)))}
 							title="Restore the window to the browser"
-							className="join-item btn btn-soft btn-primary icon-button flex-wrap overflow-hidden shrink"
+							className="join-item btn not-dark:btn-soft btn-primary icon-button flex-wrap overflow-hidden shrink"
 						>
 							<MingcuteRestoreLine className="h-full" />
 							<span>Restore</span>
