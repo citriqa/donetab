@@ -193,17 +193,24 @@ export async function deleteWindowExcept(windowId: string, tabIds?: string[]) {
 	}
 }
 
-function addRestoreAnchor(url: string): string {
-	const [baseUrl, existingAnchor] = url.split("#");
-	return baseUrl + RESTORE_ANCHOR + (existingAnchor ? "-" + existingAnchor : "");
+function addRestoreAnchor(url: string, title: string, favicon?: string): string {
+	const parsedURL = new URL(url);
+	const oldAnchor = parsedURL.hash;
+	const newAnchor = [
+		RESTORE_ANCHOR,
+		encodeURIComponent(title),
+		encodeURIComponent(favicon || parsedURL.origin + "/favicon.ico"),
+	].join("#");
+	parsedURL.hash = newAnchor + oldAnchor;
+	return parsedURL.toString();
 }
 
 export async function restoreWindow(windowFolder: string) {
-	const tabs = (await getTabsAndIcons(windowFolder)).tabs;
+	const { tabs, icons } = await getTabsAndIcons(windowFolder);
 	const urls = tabs
 		.filter(tab => tab.url !== undefined && openableURL(tab.url))
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- impossible thanks to the filter above
-		.map(tab => addRestoreAnchor(tab.url!));
+		.map(tab => addRestoreAnchor(tab.url!, tab.title, icons.get(tab.id)));
 
 	urls.unshift(LIST_URL);
 	await chrome.windows.create({
