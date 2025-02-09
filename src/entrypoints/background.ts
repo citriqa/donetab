@@ -20,6 +20,17 @@ export default defineBackground(() => {
 				});
 		}
 	});
+
+	chrome.commands.onCommand.addListener(command => {
+		switch (command) {
+			case "list-windows":
+				void showSavedWindows();
+				break;
+			case "save-window":
+				void saveWindow();
+				break;
+		}
+	});
 });
 
 function showSavedWindows() {

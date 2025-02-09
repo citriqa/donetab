@@ -13,6 +13,14 @@ export default defineConfig({
 			"tabs",
 			"bookmarks",
 		],
+		commands: {
+			"save-window": {
+				"description": "Save and close the current window",
+			},
+			"list-windows": {
+				"description": "Open the list of saved windows",
+			},
+		},
 	},
 	extensionApi: "chrome",
 	srcDir: "src",
