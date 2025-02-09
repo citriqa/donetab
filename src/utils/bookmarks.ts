@@ -43,22 +43,27 @@ function openableURL(url: string) {
 }
 
 export async function saveWindow() {
-	function closeWindow() {
-		void chrome.windows.getAll({
-			windowTypes: ["normal"],
-		}).then(async windows => (windows.length < 2 && chrome.windows.create({
-			"type": "normal",
-			"focused": true,
-			"url": LIST_URL,
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- since we get the Window object from the chrome.windows API, it must be open and have an ID
-		}))).then(() => chrome.windows.remove(window.id!));
-	}
 	const [tabs, window] = await Promise.all([
 		chrome.tabs.query({
 			"currentWindow": true,
 		}),
 		chrome.windows.getCurrent(),
 	]);
+
+	if (window.id === undefined) {
+		throw new Error("window to be saved has no ID");
+	}
+
+	void chrome.windows.getAll({
+		windowTypes: ["normal"],
+	}).then(async windows => (windows.length < 2 && chrome.windows.create({
+		"type": "normal",
+		"focused": true,
+		"url": LIST_URL,
+	})));
+	void chrome.windows.update(window.id, {
+		state: "minimized",
+	});
 
 	const extension_folder_id = await extensionFolderId();
 
@@ -87,8 +92,8 @@ export async function saveWindow() {
 			}),
 			R.reverse(),
 		));
+		void chrome.windows.remove(window.id);
 		const icons = saveableTabs.map(R.prop("favIconUrl"));
-		closeWindow();
 		for (const [index, id] of createdBookmarks.entries()) {
 			const iconURL = icons[index];
 			if (iconURL !== undefined) {
@@ -103,7 +108,7 @@ export async function saveWindow() {
 			await chrome.bookmarks.move(id, { index });
 		}
 	} else {
-		closeWindow();
+		void chrome.windows.remove(window.id);
 	}
 }
 
