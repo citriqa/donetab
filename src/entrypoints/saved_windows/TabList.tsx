@@ -3,7 +3,11 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import TabItem from "./TabItem";
 
 export default function TabList(
-	{ windowId, pinned }: { windowId: string; pinned: [string[], Dispatch<SetStateAction<string[]>>] },
+	{ windowId, pinned, filtered }: {
+		windowId: string;
+		pinned: [string[], Dispatch<SetStateAction<string[]>>];
+		filtered?: string[];
+	},
 ) {
 	const [pinnedTabs, setPinnedTabs] = pinned;
 
@@ -16,22 +20,27 @@ export default function TabList(
 	});
 
 	return (
-		<ul className="text-sm p-4">
-			{tabs.map(tab => (
-				<TabItem
-					key={tab.id}
-					windowId={windowId}
-					pinned={pinnedTabs.includes(tab.id)}
-					pinToggle={() => {
-						setPinnedTabs(pinned =>
-							pinned.includes(tab.id)
-								? pinned.filter(id => id !== tab.id)
-								: [...pinned, tab.id]
-						);
-					}}
-					tabData={tab}
-				/>
-			))}
-		</ul>
+		<div className="text-sm p-4 pb-0">
+			<ul>
+				{tabs.filter(tab => filtered === undefined || filtered.includes(tab.id)).map(tab => (
+					<TabItem
+						key={tab.id}
+						windowId={windowId}
+						pinned={pinnedTabs.includes(tab.id)}
+						pinToggle={() => {
+							setPinnedTabs(pinned =>
+								pinned.includes(tab.id)
+									? pinned.filter(id => id !== tab.id)
+									: [...pinned, tab.id]
+							);
+						}}
+						tabData={tab}
+					/>
+				))}
+			</ul>
+			<div className="py-2 ml-1">
+				{filtered !== undefined && filtered.length < tabs.length ? <i>and more filtered tabs...</i> : <></>}
+			</div>
+		</div>
 	);
 }

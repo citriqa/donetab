@@ -254,3 +254,26 @@ export async function getTabs(windowId: string) {
 		Object.assign(getProps(tab), { icon: icons.get(tab.id) } satisfies { icon: string | undefined })
 	);
 }
+
+export async function filterTabs(query: string) {
+	const preparedQuery = query.normalize().toLowerCase().split(/\s+/);
+	const windows = R.only(await chrome.bookmarks.getSubTree(await extensionFolderId()))?.children;
+	if (windows === undefined) {
+		throw new Error("No children of extension bookmarks folder returned");
+	}
+	const matchingTabs = windows.map(window => [
+		window.id,
+		window.children
+			?.filter(tab => {
+				if (tab.url) {
+					const preparedTitle = tab.title.normalize().toLowerCase();
+					return preparedQuery.every(word => preparedTitle.includes(word));
+				} else {
+					return false;
+				}
+			})
+			.map(tab => tab.id),
+	]) satisfies [string, string[] | undefined][];
+	const filteredWindows = matchingTabs.filter((entry): entry is [string, string[]] => Boolean(entry[1]?.length));
+	return new Map(filteredWindows);
+}

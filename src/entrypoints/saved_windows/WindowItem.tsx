@@ -13,7 +13,11 @@ import MingcuteRestoreLine from "~icons/mingcute/restore-line";
 import TabList from "./TabList";
 
 export default function WindowItem(
-	{ data, toggleHandle }: { data: Awaited<ReturnType<typeof getWindows>>[0]; toggleHandle: () => void },
+	{ data, toggleHandle, filteredTabs }: {
+		data: Awaited<ReturnType<typeof getWindows>>[0];
+		toggleHandle: () => void;
+		filteredTabs?: string[];
+	},
 ) {
 	function disableEditing() {
 		if (!titleInput.current) throw new Error("Title input ref not set");
@@ -120,6 +124,7 @@ export default function WindowItem(
 				<TabList
 					windowId={data.id}
 					pinned={[pinnedTabs, setPinnedTabs]}
+					filtered={filteredTabs}
 				/>
 			</Accordion.Content>
 		</Accordion.Item>
