@@ -21,7 +21,7 @@ export default function WindowList() {
 		<Accordion.Root
 			value={openItems}
 			onValueChange={setOpenItems}
-			className="min-h-[inherit] flex flex-col p-4 gap-3 w-dvw max-w-[100em]"
+			className="min-h-[inherit] flex flex-col pc pt-0 gap-3"
 			type="multiple"
 		>
 			{windows.length
@@ -39,7 +39,7 @@ export default function WindowList() {
 						key={w.id}
 					/>
 				))
-				: <h1 className="card bg-base-100 p-10 m-auto text-xl">No saved windows...</h1>}
+				: <h2 className="p-10 m-auto text-xl">No saved windows...</h2>}
 		</Accordion.Root>
 	);
 }

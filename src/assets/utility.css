@@ -5,3 +5,23 @@
 @utility grow-max {
 	flex-grow: 100000;
 }
+
+@utility w-stretch {
+	width: -webkit-fill-available;
+	width: -moz-available;
+	width: stretch;
+}
+
+@utility h-stretch {
+	height: -webkit-fill-available;
+	height: -moz-available;
+	height: stretch;
+}
+
+@utility pp-* {
+	--parent-padding: calc(var(--spacing) * --value(integer));
+}
+
+@utility pc {
+	padding: var(--parent-padding);
+}
