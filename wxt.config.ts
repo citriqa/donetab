@@ -6,6 +6,14 @@ import { defineConfig, WxtViteConfig } from "wxt";
 // See https://wxt.dev/api/config.html
 export default defineConfig({
 	manifest: {
+		name: "DoneTab",
+		description: "Rapidly save and restore windows",
+		homepage_url: "https://github.com/citriqa/donetab",
+		browser_specific_settings: {
+			gecko: {
+				id: "donetab@citri.qa",
+			},
+		},
 		action: { // action property is needed to enable toolbar click events
 			"default_title": "DoneTab - double click to save window",
 		},
