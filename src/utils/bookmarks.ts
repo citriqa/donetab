@@ -1,8 +1,9 @@
 import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
-import { LIST_URL } from "./calculated_constants";
+import { INITIAL_URL, LIST_URL, RESTORE_URL } from "./calculated_constants";
 import { EXTENSION_FOLDER_NAME, RESTORE_ANCHOR } from "./constants";
 import { retryPromise, returnvoid } from "./generic";
+import { Require } from "./types";
 
 export async function extensionFolderId() {
 	function newFolder() {
@@ -30,18 +31,6 @@ async function compressImage(url: string) {
 	return ((newURL.length * 2) < url.length) ? newURL : url;
 }
 
-function openableURL(url: string) {
-	// see https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/create#url
-	const schemes = [
-		"chrome",
-		"javascript",
-		"data",
-		"file",
-		"about",
-	].map(scheme => scheme + ":");
-	return !schemes.some(scheme => url.startsWith(scheme));
-}
-
 export async function saveWindow() {
 	const [tabs, window] = await Promise.all([
 		chrome.tabs.query({
@@ -65,11 +54,16 @@ export async function saveWindow() {
 		state: "minimized",
 	});
 
+	const filteredTabs = tabs.filter(tab =>
+		![
+			RESTORE_URL, // deliberately checking for exact match only, want to keep those with anchor (as they contain unrestored tabs)
+			LIST_URL,
+		].includes((tab as Require<"url", chrome.tabs.Tab>).url) // since we have the tabs permission, the url property is guaranteed to be defined
+	);
+
 	const extension_folder_id = await extensionFolderId();
 
-	const saveableTabs = tabs.filter(tab => tab.url !== LIST_URL && tab.url !== undefined && openableURL(tab.url));
-
-	if (saveableTabs.length) {
+	if (filteredTabs.length) {
 		const windowFolder = await chrome.bookmarks.create({
 			parentId: extension_folder_id,
 			title: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
@@ -79,7 +73,7 @@ export async function saveWindow() {
 			title: "favicons",
 		});
 		const createdBookmarks = await Promise.all(R.pipe(
-			saveableTabs,
+			filteredTabs,
 			R.sortBy(R.prop("index")),
 			R.reverse(),
 			R.map(async (tab) => {
@@ -93,7 +87,7 @@ export async function saveWindow() {
 			R.reverse(),
 		));
 		void chrome.windows.remove(window.id);
-		const icons = saveableTabs.map(R.prop("favIconUrl"));
+		const icons = filteredTabs.map(R.prop("favIconUrl"));
 		for (const [index, id] of createdBookmarks.entries()) {
 			const iconURL = icons[index];
 			if (iconURL !== undefined) {
@@ -145,12 +139,15 @@ async function splitTabsAndIcons(folder: string) {
 	}
 	const children = await retryPromise(async () => chrome.bookmarks.getChildren(folder));
 	const [iconFolderCandidates, tabs] = R.partition(children, isIconFolder);
-	return { tabs, iconFolder: R.only(iconFolderCandidates) };
+	return {
+		tabs: tabs.filter((tab): tab is Require<"url", chrome.bookmarks.BookmarkTreeNode> => tab.url !== undefined),
+		iconFolder: R.only(iconFolderCandidates),
+	};
 }
 
 async function getTabsAndIcons(
 	folder: string,
-): Promise<{ tabs: chrome.bookmarks.BookmarkTreeNode[]; icons: Map<string, string | undefined> }> {
+): Promise<{ tabs: Require<"url", chrome.bookmarks.BookmarkTreeNode>[]; icons: Map<string, string | undefined> }> {
 	const { tabs, iconFolder } = await splitTabsAndIcons(folder);
 	if (iconFolder) {
 		const icons = new Map(
@@ -200,27 +197,57 @@ export async function deleteWindowExcept(windowId: string, tabIds?: string[]) {
 
 function addRestoreAnchor(url: string, title: string, favicon?: string): string {
 	const parsedURL = new URL(url);
-	const oldAnchor = parsedURL.hash;
-	const newAnchor = [
-		RESTORE_ANCHOR,
-		encodeURIComponent(title),
-		encodeURIComponent(favicon || parsedURL.origin + "/favicon.ico"),
-	].join("#");
-	parsedURL.hash = newAnchor + oldAnchor;
-	return parsedURL.toString();
+	if (["http:", "https:"].includes(parsedURL.protocol)) {
+		const oldAnchor = parsedURL.hash;
+		const newAnchor = [
+			RESTORE_ANCHOR,
+			encodeURIComponent(title),
+			encodeURIComponent(favicon || parsedURL.origin + "/favicon.ico"),
+		].join("#");
+		parsedURL.hash = newAnchor + oldAnchor;
+		return parsedURL.toString();
+	} else {
+		return url;
+	}
 }
 
 export async function restoreWindow(windowFolder: string) {
 	const { tabs, icons } = await getTabsAndIcons(windowFolder);
-	const urls = tabs
-		.filter(tab => tab.url !== undefined && openableURL(tab.url))
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- impossible thanks to the filter above
-		.map(tab => addRestoreAnchor(tab.url!, tab.title, icons.get(tab.id)));
 
-	urls.unshift(LIST_URL);
-	await chrome.windows.create({
+	const newWindow = await chrome.windows.create({
 		focused: true,
-		url: urls,
+		url: INITIAL_URL,
+		// we do not want to open to restore page yet since we need the hash to be the final one on initial load so it knows whether to trigger close-on-deselect.
+	});
+
+	const initialTab = newWindow.tabs?.[0];
+
+	if (initialTab?.id === undefined) {
+		throw new Error("could not acquire reference to initial tab");
+	}
+
+	const failedTabs: typeof tabs = [];
+
+	for (const tab of tabs) {
+		const url = addRestoreAnchor(tab.url, tab.title, icons.get(tab.id));
+		await chrome.tabs.create({
+			url,
+			windowId: newWindow.id,
+			active: false,
+			index: 2147483647, // max int32. Number.MAX_SAFE_INTEGER is too large to be recognized as an integer by chrome
+		}).catch(() => {
+			failedTabs.push(tab);
+		});
+	}
+
+	const failedTabsAnchor = "#"
+		+ failedTabs.map(tab =>
+			[tab.url, tab.title, icons.get(tab.id) || (new URL(tab.url)).origin + "/favicon.ico"].map(encodeURIComponent)
+				.join(",")
+		).join(";");
+
+	await chrome.tabs.update(initialTab.id, {
+		url: RESTORE_URL + (failedTabs.length ? failedTabsAnchor : ""),
 	});
 
 	void deleteWindowExcept(windowFolder);
