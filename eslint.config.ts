@@ -33,6 +33,7 @@ export default tseslint.config(
 					"destructuredArrayIgnorePattern": "^_",
 				},
 			],
+			"curly": ["error", "multi-line"], // prevents confusion on which statements are conditional
 		},
 	},
 );
