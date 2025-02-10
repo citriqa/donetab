@@ -1,10 +1,29 @@
 import { saveWindow } from "@/utils/bookmarks";
-import { LIST_URL } from "@/utils/calculated_constants";
-import { DOUBLECLICK_INTERVAL_MS, PAGE_LOADED } from "@/utils/constants";
+import { INITIAL_URL, LIST_URL, RESTORE_URL } from "@/utils/calculated_constants";
+import { DOUBLECLICK_INTERVAL_MS, PAGE_LOADED, RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
 import { returnvoid } from "@/utils/generic";
 import { defineBackground } from "wxt/sandbox";
 
+function removeTab(tabId: number) {
+	// getting error "Tabs cannot be edited right now (user may be dragging a tab)" in Chrome when trying to remove the tab immediately in the onActivated listener
+	function removeCallback() {
+		chrome.tabs.remove(tabId)
+			.catch((error: unknown) => {
+				console.error("[DoneTab] Failed to remove tab:", error);
+			});
+	}
+	if (import.meta.env.FIREFOX) {
+		removeCallback();
+	} else {
+		setTimeout(removeCallback, 1000);
+	}
+}
+
 export default defineBackground(() => {
+	// it's okay (and even desirable) to use global state here because the events relying on this will fire in rapid succession, but the data should be cleared after a short timeout
+	const lostFocusTabs: [number, number][] = [];
+	const changedFocusWindows: number[] = [];
+
 	chrome.action.onClicked.addListener(
 		doubleClickListener(
 			returnvoid(saveWindow),
@@ -13,13 +32,50 @@ export default defineBackground(() => {
 	);
 
 	chrome.runtime.onMessage.addListener((message: unknown, sender) => {
-		if (message === PAGE_LOADED && sender.tab?.id) {
-			chrome.tabs.discard(sender.tab.id)
-				.catch((error: unknown) => {
-					console.error("[DoneTab] Failed to discard tab:", error);
-				});
+		switch (message) {
+			case PAGE_LOADED:
+				if (sender.tab?.id) {
+					chrome.tabs.discard(sender.tab.id)
+						.catch((error: unknown) => {
+							console.error("[DoneTab] Failed to discard tab:", error);
+						});
+				}
+				break;
+			case RESTOREPAGE_LOSTFOCUS: {
+				// typescript is bad at narrowing and needs these bindings :/
+				const tab = sender.tab;
+				const tabId = sender.tab?.id;
+				if (tab && tabId) {
+					if (changedFocusWindows.includes(tab.windowId)) {
+						changedFocusWindows.splice(changedFocusWindows.indexOf(tab.windowId), 1);
+						removeTab(tabId);
+					} else {
+						lostFocusTabs.push([tabId, tab.windowId]);
+					}
+				}
+				break;
+			}
 		}
 	});
+
+	chrome.tabs.onActivated.addListener(returnvoid(async ({ tabId, windowId }) => {
+		// this might fire when the restored window is initially opened, in which case the window id would be incorrectly added to the list
+		// because of this we check the URL of the newly focused tab and make sure its not one of ours
+		const tab = await chrome.tabs.get(tabId);
+		if (tab.url) {
+			const tabUrl = new URL(tab.url);
+			if (![RESTORE_URL, INITIAL_URL].includes(tabUrl.origin + tabUrl.pathname)) {
+				const matchingTab = lostFocusTabs.find(([_tab, window]) => window === windowId);
+				if (matchingTab) {
+					const [tab, _window] = matchingTab;
+					lostFocusTabs.splice(lostFocusTabs.indexOf(matchingTab), 1);
+					removeTab(tab);
+				} else {
+					changedFocusWindows.push(windowId);
+				}
+			}
+		}
+	}));
 
 	chrome.commands.onCommand.addListener(command => {
 		switch (command) {

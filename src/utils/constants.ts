@@ -9,3 +9,5 @@ export const FAVICON_LOAD_TIMEOUT_MS = 500;
 export const RESTORE_ANCHOR = "#__donetab-restore__";
 
 export const PAGE_LOADED = "pageloaded";
+
+export const RESTOREPAGE_LOSTFOCUS = "restorepage-lostfocus";
