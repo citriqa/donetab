@@ -1,9 +1,10 @@
 import { unpropagated } from "@/utils/components";
 import { DOUBLECHECK_TIMEOUT_MS } from "@/utils/constants";
+import { Require } from "@/utils/types";
 import { useState } from "react";
 
 type ButtonProps = React.ComponentPropsWithRef<"button">;
-type ButtonPropsForceOnClick = Omit<ButtonProps, "onClick"> & Required<Pick<ButtonProps, "onClick">>;
+type ButtonPropsForceOnClick = Require<"onClick", ButtonProps>;
 
 export default function DoubleCheckButton(props: ButtonPropsForceOnClick) {
 	const { onClick, ...otherProps } = props;
