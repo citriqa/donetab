@@ -108,3 +108,7 @@
 	);
 	--color-error-bg: black; /* just for overriding by theme */
 }
+
+@utility limit-content-width {
+	@apply max-w-[100rem];
+}

@@ -29,7 +29,7 @@ export default function WindowList({
 				<Accordion.Root
 					value={filteredOpenItems || openItems}
 					onValueChange={filteredTabs ? setFilteredOpenItems : setOpenItems}
-					className="min-h-[inherit] flex flex-col pc pt-0 gap-3 max-w-[100em]"
+					className="min-h-[inherit] flex flex-col pc pt-0 gap-3 limit-content-width"
 					type="multiple"
 				>
 					{windows

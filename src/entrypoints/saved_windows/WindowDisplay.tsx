@@ -25,7 +25,7 @@ export default function WindowDisplay() {
 		}
 	}, [filter, windows]); // `windows` is not used in the effect directly but the search result should update when the set of saved windows does
 	return (
-		<div className="flex flex-col m-auto max-h-[100dvh] max-w-[100em] pp-4">
+		<div className="flex flex-col m-auto max-h-[100dvh] limit-content-width pp-4">
 			<Header filterUpdate={setFilter} />
 			<WindowList filteredTabs={filteredTabs} windows={windows} />
 		</div>

@@ -32,7 +32,7 @@ export default function TabDisplay() {
 		};
 	}, [failedTabs]);
 	return (
-		<div className="flex flex-col p-4 gap-4 max-w-[100em] m-auto">
+		<div className="flex flex-col p-4 gap-4 limit-content-width m-auto">
 			<div className="flex justify-start">
 				<Brand>
 					your restored tabs
