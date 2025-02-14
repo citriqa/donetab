@@ -8,7 +8,7 @@ if (!rootElement) throw new Error("Failed to find the root element");
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
 		<InfoPage subtitle="your restored tabs">
-			<p>Your window is being restored.</p>
+			<p className="anim-ellipsis">Your window is being restored.</p>
 		</InfoPage>
 	</React.StrictMode>,
 );
