@@ -1,3 +1,4 @@
+import Favicon from "@/components/Favicon";
 import useToggle from "@/hooks/useToggle";
 import { deleteTabsFrom, getTabs } from "@/utils/bookmarks";
 import MingcuteDelete2Line from "~icons/mingcute/delete-2-line";
@@ -17,7 +18,7 @@ export default function TabItem(
 		? <></>
 		: (
 			<li className="flex items-center rounded-sm odd:bg-base-150 has-[.TRASHBUTTON:hover]:bg-error-bg px-2 py-1 gap-2 my-0.5">
-				<img className="size-4" src={tabData.icon} alt="" />
+				<Favicon src={tabData.icon} className="size-4" />
 				<button
 					className="group/pinbutton hover:text-primary icon-button cursor-pointer"
 					onClick={pinToggle}

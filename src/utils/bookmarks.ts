@@ -202,7 +202,7 @@ function addRestoreAnchor(url: string, title: string, favicon?: string): string 
 		const newAnchor = [
 			RESTORE_ANCHOR,
 			encodeURIComponent(title),
-			encodeURIComponent(favicon || parsedURL.origin + "/favicon.ico"),
+			encodeURIComponent(favicon || ""),
 		].join("#");
 		parsedURL.hash = newAnchor + oldAnchor;
 		return parsedURL.toString();
@@ -242,7 +242,7 @@ export async function restoreWindow(windowFolder: string) {
 
 	const failedTabsAnchor = "#"
 		+ failedTabs.map(tab =>
-			[tab.url, tab.title, icons.get(tab.id) || (new URL(tab.url)).origin + "/favicon.ico"].map(encodeURIComponent)
+			[tab.url, tab.title, icons.get(tab.id) || ""].map(encodeURIComponent)
 				.join(",")
 		).join(";");
 

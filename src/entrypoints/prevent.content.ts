@@ -5,11 +5,13 @@ import { defineContentScript } from "wxt/sandbox";
 function setTitleAndIcon(title: string, favicon: string) {
 	const newHead = document.createElement("head");
 	newHead.appendChild(document.createElement("title")).textContent = title;
-	const faviconLink = newHead.appendChild(document.createElement("link"));
-	faviconLink.rel = "icon";
-	faviconLink.href = favicon;
 	const newBody = document.createElement("body");
-	newBody.appendChild(document.createElement("img")).src = favicon; // using this we can await the favicon being loaded before discarding the tab
+	if (favicon !== "") {
+		const faviconLink = newHead.appendChild(document.createElement("link"));
+		faviconLink.rel = "icon";
+		faviconLink.href = favicon;
+		newBody.appendChild(document.createElement("img")).src = favicon; // using this we can await the favicon being loaded before discarding the tab
+	}
 	const newHtml = document.createElement("html");
 	newHtml.appendChild(newHead);
 	newHtml.appendChild(newBody);

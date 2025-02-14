@@ -1,4 +1,5 @@
 import Brand from "@/components/Brand";
+import Favicon from "@/components/Favicon";
 import { RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -54,7 +55,7 @@ export default function TabDisplay() {
 										href={tab.url}
 									>
 										<div className="flex gap-2 items-center overflow-hidden">
-											<img src={tab.icon} className="size-4" />
+											<Favicon src={tab.icon} className="size-4" />
 											<span className="truncate">{tab.title}</span>
 										</div>
 										<span className="truncate opacity-75 shrink-max">{tab.url}</span>

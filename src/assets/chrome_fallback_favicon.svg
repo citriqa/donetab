@@ -1,0 +1,16 @@
+<!--
+// Copyright 2015 The Chromium Authors
+// Copyright 2025 citriqa
+//
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//
+//    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//    * Neither the name of Google LLC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <path fill="currentColor" d="M38.016 12.008v8.32h5.408v-8.32zm1.75 1.75v4.82h1.908v-4.82ZM30.283 5.5v5.79h6.123V5.5Zm1.498 1.498v2.794h3.128V6.998zm-5.513 1.996v9.928h14.746V8.994Zm3.5 3.5h7.746v2.928h-7.746zm-1.75-1.75v6.428h11.246v-6.428zm2.796-6.367c-2.624 0-4.788 2.164-4.789 4.789v1.672h6.461V4.377Zm0 1.672a3.118 3.118 0 0 0-3.117 3.117h3.117zm-4.453 3.85c-3.85 0-7.023 3.173-7.023 7.023v2.451h9.474V9.898Zm0 2.45a4.572 4.572 0 0 0-4.572 4.573h4.572zm1.748 4.965v1.508a7.997 7.997 0 0 0 3.998 6.92 7.998 7.998 0 0 0 7.993 0 7.997 7.997 0 0 0 3.998-6.92v-1.508h-7.993zm3.418 3.014h9.153c-.378 1.144-1.01 2.184-2.086 2.805a4.973 4.973 0 0 1-4.979 0c-1.075-.621-1.71-1.661-2.088-2.805zm-1.91-1.507a6.486 6.486 0 0 0 3.244 5.617 6.486 6.486 0 0 0 6.486 0 6.486 6.486 0 0 0 3.244-5.617h-6.486zm-16.371 7.69v3.466l.5.502a18.566 18.566 0 0 0 5.204 3.672l.369.176h3.805v-7.816zm5.456 3.467h.87v.508c-.294-.166-.592-.326-.87-.508zm1.03 2.615h1.616v-4.348h-6.325v1.03a17.078 14.632 0 0 0 4.708 3.318zm-12.8 1.417v3.902l.55.566a20.466 20.466 0 0 0 5.735 4.134l.407.199h4.192v-8.8Zm6.011 3.904h.96v.572c-.324-.187-.653-.367-.96-.572Zm1.135 2.944h1.781v-4.896h-6.97v1.16a18.819 16.475 0 0 0 5.189 3.736zM1.28 24.09l.08 1.31a22.735 22.735 0 0 0 2.475 8.995l.346.67h10.287V24.09Zm2.764 2.469H12v6.037H5.77c-.899-1.911-1.457-3.945-1.725-6.037zm.889 7.271h8.3v-8.506H2.594a21.5 21.5 0 0 0 2.34 8.506zm9.282 2.028 11.77-.083-.02-2.856c-.035-4.889-4.088-8.885-8.978-8.85l-2.855.02zm2.792-8.935a6.06 6.06-.404 0 1 6.103 6.017l-6.06.043z"/>
+  <circle cx="24" cy="24" r="21.5" fill="none" stroke="currentColor" stroke-width="5"/>
+</svg>
