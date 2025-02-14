@@ -1,3 +1,4 @@
+import InfoPage from "@/components/InfoPage";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import TabDisplay from "./TabDisplay";
@@ -7,6 +8,8 @@ if (!rootElement) throw new Error("Failed to find the root element");
 
 ReactDOM.createRoot(rootElement).render(
 	<React.StrictMode>
-		<TabDisplay />
+		<InfoPage subtitle="your restored tabs">
+			<TabDisplay />
+		</InfoPage>
 	</React.StrictMode>,
 );
