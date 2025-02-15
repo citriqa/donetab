@@ -99,6 +99,8 @@ export async function saveWindow() {
 					})
 				);
 			}
+		}
+		for (const [index, id] of createdBookmarks.entries()) {
 			await chrome.bookmarks.move(id, { index });
 		}
 	} else {
