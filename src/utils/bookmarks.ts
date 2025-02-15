@@ -216,8 +216,6 @@ export async function restoreWindow(windowFolder: string) {
 
 	const newWindow = await chrome.windows.create({
 		focused: true,
-		url: INITIAL_URL,
-		// we do not want to open to restore page yet since we need the hash to be the final one on initial load so it knows whether to trigger close-on-deselect.
 	});
 
 	const initialTab = newWindow.tabs?.[0];
@@ -225,6 +223,12 @@ export async function restoreWindow(windowFolder: string) {
 	if (initialTab?.id === undefined) {
 		throw new Error("could not acquire reference to initial tab");
 	}
+
+	// we do not want to open to restore page yet since we need the hash to be the final one on initial load so it knows whether to trigger close-on-deselect.
+	// this URL cannot be specified upon window creation because it is set at some later point and may overwrite the restore page URL if the tabs are restored quickly
+	const initalTabNavigationPromise = chrome.tabs.update(initialTab.id, {
+		url: INITIAL_URL,
+	});
 
 	const failedTabs: typeof tabs = [];
 
@@ -246,6 +250,20 @@ export async function restoreWindow(windowFolder: string) {
 				.join(",")
 		).join(";");
 
+	// if there's only few tabs to restore, the initial url may not even be pending yet at this point, which means it would overwrite the restore page without waiting for it here...
+	if ((await chrome.tabs.get(initialTab.id)).status === "loading") {
+		await new Promise<void>((resolve) => {
+			const listener = (tabId: number, changeInfo: chrome.tabs.TabChangeInfo) => {
+				if (tabId === initialTab.id && changeInfo.status === "complete") {
+					chrome.tabs.onUpdated.removeListener(listener);
+					resolve();
+				}
+			};
+			chrome.tabs.onUpdated.addListener(listener);
+		});
+	}
+
+	await initalTabNavigationPromise;
 	await chrome.tabs.update(initialTab.id, {
 		url: RESTORE_URL + (failedTabs.length ? failedTabsAnchor : ""),
 	});
