@@ -15,6 +15,7 @@ function setTitleAndIcon(title: string, favicon: string) {
 	const newHtml = document.createElement("html");
 	newHtml.appendChild(newHead);
 	newHtml.appendChild(newBody);
+	document.replaceChildren(); // needed for the subsequent one not to error in Firefox
 	document.replaceChildren(newHtml);
 }
 
@@ -24,7 +25,7 @@ export default defineContentScript({
 	"world": "MAIN", // isolated world scripts are delayed in their injection
 	main() {
 		if (location.hash.startsWith(RESTORE_ANCHOR)) {
-			document.replaceChildren(); // prevents loading the original page
+			window.stop(); // prevents loading the original page
 			window.onfocus = () => { // visibilityState starts out as "visible" in Chrome even when the tab is opened in the background
 				location.replace(originalLocation(location));
 			};
