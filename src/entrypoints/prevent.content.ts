@@ -10,7 +10,11 @@ function setTitleAndIcon(title: string, favicon: string) {
 		const faviconLink = newHead.appendChild(document.createElement("link"));
 		faviconLink.rel = "icon";
 		faviconLink.href = favicon;
-		newBody.appendChild(document.createElement("img")).src = favicon; // using this we can await the favicon being loaded before discarding the tab
+		// using this we can await the favicon being loaded before discarding the tab
+		const faviconImage = newBody.appendChild(document.createElement("img"));
+		faviconImage.src = favicon;
+		// avoiding display and visibility styles so the browser doesn't optimize the image away
+		faviconImage.style.opacity = "0";
 	}
 	const newHtml = document.createElement("html");
 	newHtml.appendChild(newHead);
