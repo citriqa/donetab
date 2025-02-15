@@ -23,6 +23,10 @@ function setTitleAndIcon(title: string, favicon: string) {
 	document.replaceChildren(newHtml);
 }
 
+function refresh() {
+	location.replace(originalLocation(location));
+}
+
 export default defineContentScript({
 	matches: ["<all_urls>"],
 	"runAt": "document_start",
@@ -30,9 +34,8 @@ export default defineContentScript({
 	main() {
 		if (location.hash.startsWith(RESTORE_ANCHOR)) {
 			window.stop(); // prevents loading the original page
-			window.onfocus = () => { // visibilityState starts out as "visible" in Chrome even when the tab is opened in the background
-				location.replace(originalLocation(location));
-			};
+			window.onfocus = refresh; // visibilityState starts out as "visible" in Chrome even when the tab is opened in the background
+			if (document.hasFocus()) refresh(); // the tab may already be focused if the user is very fast at switching to it
 			const { title, favicon } = decodeAnchor(location.hash);
 			setTitleAndIcon(title, favicon);
 		}
