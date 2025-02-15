@@ -60,18 +60,20 @@ export default defineBackground(() => {
 
 	chrome.tabs.onActivated.addListener(returnvoid(async ({ tabId, windowId }) => {
 		// this might fire when the restored window is initially opened, in which case the window id would be incorrectly added to the list
-		// because of this we check the URL of the newly focused tab and make sure its not one of ours
+		// because of this we check the URL of the newly focused tab and make sure its not one of ours or about:blank
 		const tab = await chrome.tabs.get(tabId);
 		if (tab.url) {
-			const tabUrl = new URL(tab.url);
-			if (![RESTORE_URL, INITIAL_URL].includes(tabUrl.origin + tabUrl.pathname)) {
+			const tabUrlWithoutHash = tab.url.split("#", 1)[0];
+			if (![RESTORE_URL, INITIAL_URL, "about:blank"].includes(tabUrlWithoutHash)) {
 				const matchingTab = lostFocusTabs.find(([_tab, window]) => window === windowId);
 				if (matchingTab) {
 					const [tab, _window] = matchingTab;
 					lostFocusTabs.splice(lostFocusTabs.indexOf(matchingTab), 1);
 					removeTab(tab);
 				} else {
-					changedFocusWindows.push(windowId);
+					if (!changedFocusWindows.includes(windowId)) {
+						changedFocusWindows.push(windowId);
+					}
 				}
 			}
 		}
