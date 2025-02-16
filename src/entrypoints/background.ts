@@ -1,4 +1,4 @@
-import { saveWindow } from "@/utils/bookmarks";
+import { saveWindow } from "@/utils/bookmarks/save";
 import { INITIAL_URL, LIST_URL, RESTORE_URL } from "@/utils/calculated_constants";
 import { DOUBLECLICK_INTERVAL_MS, PAGE_LOADED, RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
 import { returnvoid } from "@/utils/generic";

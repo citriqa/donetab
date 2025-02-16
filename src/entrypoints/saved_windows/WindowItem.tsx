@@ -1,6 +1,8 @@
 import DoubleCheckButton from "@/components/DoubleCheckButton";
 import useToggle from "@/hooks/useToggle";
-import { deleteWindowExcept, getWindows, renameWindow, restoreWindow } from "@/utils/bookmarks";
+import { getWindows } from "@/utils/bookmarks/list";
+import { deleteWindowExcept, renameWindow } from "@/utils/bookmarks/other";
+import { restoreWindow } from "@/utils/bookmarks/restore";
 import { unpropagated } from "@/utils/components";
 import { returnvoid } from "@/utils/generic";
 import { Accordion } from "radix-ui";

@@ -1,5 +1,8 @@
 import useAsyncData from "@/hooks/useAsyncData";
-import { extensionFolderId, filterTabs, getWindows, subscribeToFolder } from "@/utils/bookmarks";
+import { extensionFolderId } from "@/utils/bookmarks/common";
+import { filterTabs } from "@/utils/bookmarks/list";
+import { subscribeToFolder } from "@/utils/bookmarks/list";
+import { getWindows } from "@/utils/bookmarks/list";
 import { useEffect, useState } from "react";
 import Header from "./Header";
 import WindowList from "./WindowList";

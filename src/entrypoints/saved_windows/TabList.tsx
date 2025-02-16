@@ -1,4 +1,5 @@
-import { getTabs, subscribeToFolder } from "@/utils/bookmarks";
+import { getTabs } from "@/utils/bookmarks/list";
+import { subscribeToFolder } from "@/utils/bookmarks/list";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import TabItem from "./TabItem";
 

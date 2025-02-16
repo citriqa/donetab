@@ -1,4 +1,4 @@
-import { getWindows } from "@/utils/bookmarks";
+import { getWindows } from "@/utils/bookmarks/list";
 import { Accordion } from "radix-ui";
 import { useEffect, useState } from "react";
 import * as R from "remeda";

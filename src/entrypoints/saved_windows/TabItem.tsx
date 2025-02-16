@@ -1,6 +1,7 @@
 import Favicon from "@/components/Favicon";
 import useToggle from "@/hooks/useToggle";
-import { deleteTabsFrom, getTabs } from "@/utils/bookmarks";
+import { getTabs } from "@/utils/bookmarks/list";
+import { deleteTabsFrom } from "@/utils/bookmarks/other";
 import MingcuteDelete2Line from "~icons/mingcute/delete-2-line";
 import MingcuteLockFill from "~icons/mingcute/lock-fill";
 import MingcuteUnlockLine from "~icons/mingcute/unlock-line";
