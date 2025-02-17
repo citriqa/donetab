@@ -1,13 +1,12 @@
 import * as R from "remeda";
 import { retryPromise, returnvoid } from "../generic";
-import { extensionFolderId, getTabsAndIcons } from "./common";
+import { extension_folder_id, getTabsAndIcons } from "./common";
 
 export function getProps(bookmark: chrome.bookmarks.BookmarkTreeNode) {
 	return R.pick(bookmark, ["title", "id", "dateAdded", "url"]);
 }
 
 export async function isInTree(id: string | undefined, tree?: string) {
-	const extension_folder_id = extensionFolderId();
 	while (id !== undefined) {
 		if (id === (tree || await extension_folder_id)) {
 			return true;
@@ -46,8 +45,7 @@ export function subscribeToFolder(folderId: string, callback: () => void) {
 }
 
 export async function getWindows() {
-	const storage = await extensionFolderId();
-	const windowBookmarks = await retryPromise(async () => chrome.bookmarks.getChildren(storage));
+	const windowBookmarks = await retryPromise(async () => chrome.bookmarks.getChildren(await extension_folder_id));
 	const windowProps = await Promise.all(windowBookmarks.map(getProps));
 	return R.sortBy(windowProps, w => w.dateAdded || 0).reverse();
 }
@@ -60,7 +58,7 @@ export async function getTabs(windowId: string) {
 }
 export async function filterTabs(query: string) {
 	const preparedQuery = query.normalize().toLowerCase().split(/\s+/);
-	const windows = R.only(await chrome.bookmarks.getSubTree(await extensionFolderId()))?.children;
+	const windows = R.only(await chrome.bookmarks.getSubTree(await extension_folder_id))?.children;
 	if (windows === undefined) {
 		throw new Error("No children of extension bookmarks folder returned");
 	}

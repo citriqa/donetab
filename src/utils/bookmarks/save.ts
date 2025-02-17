@@ -2,7 +2,7 @@ import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
 import { LIST_URL, RESTORE_URL } from "../calculated_constants";
 import { Require } from "../types";
-import { extensionFolderId } from "./common";
+import { extension_folder_id } from "./common";
 
 export async function compressImage(url: string) {
 	const blob = await fromURL(
@@ -46,11 +46,9 @@ export async function saveWindow() {
 		].includes((tab as Require<"url", chrome.tabs.Tab>).url) // since we have the tabs permission, the url property is guaranteed to be defined
 	);
 
-	const extension_folder_id = await extensionFolderId();
-
 	if (filteredTabs.length) {
 		const windowFolder = await chrome.bookmarks.create({
-			parentId: extension_folder_id,
+			parentId: await extension_folder_id,
 			title: new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString(),
 		});
 		const iconFolder = chrome.bookmarks.create({
