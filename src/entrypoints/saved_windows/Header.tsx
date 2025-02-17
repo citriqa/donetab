@@ -1,10 +1,13 @@
 import Brand from "@/components/Brand";
-import { Dispatch, SetStateAction, useRef } from "react";
+import { WriteableAtom } from "@/utils/types";
+import { useSetAtom } from "jotai";
+import { useRef } from "react";
 import * as R from "remeda";
 import MingcuteCloseLine from "~icons/mingcute/close-line";
 
-export default function Header({ filterUpdate }: { filterUpdate: Dispatch<SetStateAction<string>> }) {
+export default function Header({ filter }: { filter: WriteableAtom<string> }) {
 	const searchInput = useRef<HTMLInputElement>(null);
+	const filterUpdate = useSetAtom(filter);
 	const filterThrottle = R.funnel(filterUpdate, {
 		minQuietPeriodMs: 200,
 		triggerAt: "end",

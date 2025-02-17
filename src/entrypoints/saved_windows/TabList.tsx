@@ -1,17 +1,16 @@
 import { getTabs } from "@/utils/bookmarks/list";
 import { subscribeToFolder } from "@/utils/bookmarks/list";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { WriteableAtom } from "@/utils/types";
+import { useEffect, useState } from "react";
 import TabItem from "./TabItem";
 
 export default function TabList(
-	{ windowId, pinned, filtered }: {
+	{ windowId, pinnedTabsAtom, filtered }: {
 		windowId: string;
-		pinned: [string[], Dispatch<SetStateAction<string[]>>];
+		pinnedTabsAtom: WriteableAtom<string[]>;
 		filtered?: string[];
 	},
 ) {
-	const [pinnedTabs, setPinnedTabs] = pinned;
-
 	const [tabs, set_tabs] = useState<Awaited<ReturnType<typeof getTabs>>>([]);
 	useEffect(() => {
 		void getTabs(windowId).then(set_tabs);
@@ -27,14 +26,7 @@ export default function TabList(
 					<TabItem
 						key={tab.id}
 						windowId={windowId}
-						pinned={pinnedTabs.includes(tab.id)}
-						pinToggle={() => {
-							setPinnedTabs(pinned =>
-								pinned.includes(tab.id)
-									? pinned.filter(id => id !== tab.id)
-									: [...pinned, tab.id]
-							);
-						}}
+						pinnedTabsAtom={pinnedTabsAtom}
 						tabData={tab}
 					/>
 				))}

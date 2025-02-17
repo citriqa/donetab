@@ -1,4 +1,6 @@
-import { getWindows } from "@/utils/bookmarks/list";
+import { extension_folder_id } from "@/utils/bookmarks/common";
+import { filterTabs, getWindows, subscribeToFolder } from "@/utils/bookmarks/list";
+import { Atom, useAtomValue } from "jotai";
 import { Accordion } from "radix-ui";
 import { useEffect, useState } from "react";
 import * as R from "remeda";
@@ -9,12 +11,33 @@ function EmptyInfo({ children }: { children: React.ReactNode | React.ReactNode[]
 }
 
 export default function WindowList({
-	filteredTabs,
-	windows,
+	filter,
 }: {
-	filteredTabs: Map<string, string[]> | null;
-	windows: Awaited<ReturnType<typeof getWindows>>;
+	filter: Atom<string>;
 }) {
+	const filterVal = useAtomValue(filter);
+	const [windows, set_windows] = useState<Awaited<ReturnType<typeof getWindows>>>([]);
+	useEffect(() => {
+		void getWindows().then(set_windows);
+		const unsubscribe = extension_folder_id.then(id =>
+			subscribeToFolder(id, () => {
+				void getWindows().then(set_windows);
+			})
+		);
+		return () => {
+			void unsubscribe.then(fn => {
+				fn();
+			});
+		};
+	}, []);
+	const [filteredTabs, setFilteredTabs] = useState<Map<string, string[]> | null>(null);
+	useEffect(() => {
+		if (filterVal === "") {
+			setFilteredTabs(null);
+		} else {
+			void filterTabs(filterVal).then(setFilteredTabs);
+		}
+	}, [filterVal, windows]); // `windows` is not used in the effect directly but the search result should update when the set of saved windows does
 	const [openItems, setOpenItems] = useState<string[]>([]);
 	const [filteredOpenItems, setFilteredOpenItems] = useState<string[] | undefined>();
 	useEffect(() => {

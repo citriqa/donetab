@@ -1,12 +1,14 @@
 import DoubleCheckButton from "@/components/DoubleCheckButton";
+import useAtomReader from "@/hooks/useAtomReader";
 import useToggle from "@/hooks/useToggle";
 import { getWindows } from "@/utils/bookmarks/list";
 import { deleteWindowExcept, renameWindow } from "@/utils/bookmarks/other";
 import { restoreWindow } from "@/utils/bookmarks/restore";
 import { unpropagated } from "@/utils/components";
 import { returnvoid } from "@/utils/generic";
+import { atom, useSetAtom } from "jotai";
 import { Accordion } from "radix-ui";
-import { useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import MingcuteBroomLine from "~icons/mingcute/broom-line";
 import MingcuteCheckLine from "~icons/mingcute/check-line";
 import MingcuteDownLine from "~icons/mingcute/down-line";
@@ -26,7 +28,9 @@ export default function WindowItem(
 		void renameWindow(data.id, titleInput.current.value);
 		toggleTitleEditable();
 	}
-	const [pinnedTabs, setPinnedTabs] = useState<string[]>([]);
+	const pinnedTabsAtom = useMemo(() => atom<string[]>([]), []);
+	const readPinnedTabs = useAtomReader(pinnedTabsAtom);
+	const setPinnedTabs = useSetAtom(pinnedTabsAtom);
 	const [isTitleEditable, toggleTitleEditable] = useToggle(false);
 	const titleInput = useRef<HTMLInputElement>(null);
 
@@ -99,7 +103,7 @@ export default function WindowItem(
 							onClick={returnvoid(async () => {
 								await deleteWindowExcept(
 									data.id,
-									pinnedTabs,
+									readPinnedTabs(),
 								);
 								setPinnedTabs([]);
 							})}
@@ -125,7 +129,7 @@ export default function WindowItem(
 			<Accordion.Content className="overflow-hidden">
 				<TabList
 					windowId={data.id}
-					pinned={[pinnedTabs, setPinnedTabs]}
+					pinnedTabsAtom={pinnedTabsAtom}
 					filtered={filteredTabs}
 				/>
 			</Accordion.Content>
