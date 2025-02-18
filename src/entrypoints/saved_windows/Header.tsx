@@ -21,13 +21,20 @@ export default function Header({ filter }: { filter: WriteableAtom<string> }) {
 			filterTimeout.current = null;
 		}
 	}, [filterUpdate]);
-	const clearSearch = () => {
+	const clearSearch = useCallback(() => {
 		if (searchInput.current) {
 			searchInput.current.value = "";
 			filterThrottle("");
 			searchInput.current.blur();
 		}
-	};
+	}, [filterThrottle]);
+	const inputKeyHandler = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === "Escape") clearSearch();
+	}, [clearSearch]);
+	const inputChangeHandler = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+		filterThrottle(event.target.value);
+	}, [filterThrottle]);
+
 	return (
 		<div className="flex justify-between gap-4 pc sticky z-10 bg-[var(--root-bg)] top-0">
 			<Brand>
@@ -39,14 +46,8 @@ export default function Header({ filter }: { filter: WriteableAtom<string> }) {
 					className="grow"
 					type="grow"
 					spellCheck={false}
-					onKeyUp={e => {
-						if (e.key === "Escape") {
-							clearSearch();
-						}
-					}}
-					onChange={e => {
-						filterThrottle(e.target.value);
-					}}
+					onKeyUp={inputKeyHandler}
+					onChange={inputChangeHandler}
 					placeholder="Search tabs"
 				/>
 				<button

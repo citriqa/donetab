@@ -4,8 +4,6 @@ import useToggle from "@/hooks/useToggle";
 import { getWindows } from "@/utils/bookmarks/list";
 import { deleteWindowExcept, renameWindow } from "@/utils/bookmarks/other";
 import { restoreWindow } from "@/utils/bookmarks/restore";
-import { unpropagated } from "@/utils/components";
-import { returnvoid } from "@/utils/generic";
 import { atom, useSetAtom } from "jotai";
 import { Accordion } from "radix-ui";
 import { useCallback, useMemo, useRef } from "react";
@@ -16,10 +14,14 @@ import MingcutePencilLine from "~icons/mingcute/pencil-line";
 import MingcuteRestoreLine from "~icons/mingcute/restore-line";
 import TabList from "./TabList";
 
+const doNothing = (event: React.MouseEvent) => {
+	event.stopPropagation();
+};
+
 export default function WindowItem(
 	{ data, toggleHandle, filteredTabs }: {
 		data: Awaited<ReturnType<typeof getWindows>>[0];
-		toggleHandle: () => void;
+		toggleHandle: (id: string) => void;
 		filteredTabs?: string[];
 	},
 ) {
@@ -34,14 +36,34 @@ export default function WindowItem(
 		toggleTitleEditable();
 	}, [data.id, toggleTitleEditable]);
 	const renameButtonHandler = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-		unpropagated(() => {
-			if (isTitleEditable) {
-				disableEditing();
-			} else {
-				toggleTitleEditable();
-			}
-		})(event);
+		if (isTitleEditable) {
+			disableEditing();
+		} else {
+			toggleTitleEditable();
+		}
+		event.stopPropagation();
 	}, [disableEditing, isTitleEditable, toggleTitleEditable]);
+	const restoreButtonHandler = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+		void restoreWindow(data.id).then(() => {
+			window.close();
+		});
+		event.stopPropagation();
+	}, [data.id]);
+	const deleteButtonHandler = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+		void deleteWindowExcept(
+			data.id,
+			readPinnedTabs(),
+		).then(() => {
+			setPinnedTabs([]);
+		});
+		event.stopPropagation();
+	}, [data.id, readPinnedTabs, setPinnedTabs]);
+	const inputKeyHandler = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === "Enter") disableEditing();
+	}, [disableEditing]);
+	const concreteToggleHandle = useCallback(() => {
+		toggleHandle(data.id);
+	}, [data.id, toggleHandle]);
 
 	return (
 		<Accordion.Item
@@ -53,7 +75,7 @@ export default function WindowItem(
 				asChild // default element is h3, which cannot nest the heading contained
 			>
 				<div
-					onClick={toggleHandle} // not wrapping the entire header in Accordion.Trigger because nested buttons are bad accessibilty
+					onClick={concreteToggleHandle} // not wrapping the entire header in Accordion.Trigger because nested buttons are bad accessibilty
 					className="flex flex-row items-center gap-4 p-2 card bg-base-100 cursor-pointer"
 				>
 					<Accordion.Trigger
@@ -68,10 +90,8 @@ export default function WindowItem(
 								autoFocus
 								ref={titleInput}
 								key={data.title}
-								onClick={unpropagated()}
-								onKeyUp={e => {
-									if (e.key === "Enter") disableEditing();
-								}}
+								onClick={doNothing}
+								onKeyUp={inputKeyHandler}
 								defaultValue={data.title}
 								aria-label="Edit window name"
 								className="flex-grow input"
@@ -103,13 +123,7 @@ export default function WindowItem(
 								)}
 						</button>
 						<DoubleCheckButton
-							onClick={returnvoid(async () => {
-								await deleteWindowExcept(
-									data.id,
-									readPinnedTabs(),
-								);
-								setPinnedTabs([]);
-							})}
+							onClick={deleteButtonHandler}
 							title="Remove all unprotected tabs from window"
 							className="join-item btn not-dark:btn-soft [--depth:1.5] btn-error icon-button flex-wrap overflow-hidden shrink"
 						>
@@ -119,7 +133,7 @@ export default function WindowItem(
 							</>
 						</DoubleCheckButton>
 						<button
-							onClick={unpropagated(returnvoid(() => restoreWindow(data.id)))}
+							onClick={restoreButtonHandler}
 							title="Restore the window to the browser"
 							className="join-item btn not-dark:btn-soft btn-primary icon-button flex-wrap overflow-hidden shrink"
 						>

@@ -3,7 +3,7 @@ import { filterTabs, getWindows, subscribeToFolder } from "@/utils/bookmarks/lis
 import { Atom, atom, useAtom, useAtomValue } from "jotai";
 import { atomEffect } from "jotai-effect";
 import { Accordion } from "radix-ui";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import * as R from "remeda";
 import WindowItem from "./WindowItem";
 
@@ -50,6 +50,13 @@ export default function WindowList({
 	useEffect(() => {
 		setFilteredOpenItems(filteredTabs?.keys().toArray());
 	}, [filteredTabs]);
+	const toggleHandle = useCallback((id: string) => {
+		const currentOpenItems = filteredOpenItems || openItems;
+		const index = currentOpenItems.indexOf(id);
+		(filteredTabs ? setFilteredOpenItems : setOpenItems)(
+			index === -1 ? [...currentOpenItems, id] : R.splice(currentOpenItems, index, 1, []),
+		);
+	}, [filteredOpenItems, filteredTabs, openItems]);
 	return (
 		windows === null
 			? <></> // fallback while the list of windows is loading
@@ -68,13 +75,7 @@ export default function WindowList({
 						.filter(w => filteredTabs === null || filteredTabs.has(w.id))
 						.map(w => (
 							<WindowItem
-								toggleHandle={() => {
-									const currentOpenItems = filteredOpenItems || openItems;
-									const index = currentOpenItems.indexOf(w.id);
-									(filteredTabs ? setFilteredOpenItems : setOpenItems)(
-										index === -1 ? [...currentOpenItems, w.id] : R.splice(currentOpenItems, index, 1, []),
-									);
-								}}
+								toggleHandle={toggleHandle}
 								data={w}
 								key={w.id}
 								filteredTabs={filteredTabs?.get(w.id)}
