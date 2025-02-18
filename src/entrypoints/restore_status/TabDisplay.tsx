@@ -1,6 +1,6 @@
 import Favicon from "@/components/Favicon";
 import { RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function decodeHash(hash: string) {
 	if (hash === "") {
@@ -14,18 +14,23 @@ function decodeHash(hash: string) {
 }
 
 export default function TabDisplay() {
-	const [windowOpened, setWindowOpened] = useState(location.href.includes("##"));
-	const hashChangeListener = useCallback((event: HashChangeEvent) => {
-		console.log("hashchange observed", event.newURL);
-		setWindowOpened(event.newURL.includes("##"));
+	const [failedTabs, setFailedTabs] = useState<ReturnType<typeof decodeHash> | null>(null);
+	const inspectHash = useCallback(() => {
+		setFailedTabs(
+			location.hash.includes("##")
+				? decodeHash(location.hash.slice(2))
+				: null,
+		);
 	}, []);
+	const hashChangeListener = useCallback((_event: HashChangeEvent) => {
+		inspectHash();
+	}, [inspectHash]);
 	useEffect(() => {
 		addEventListener("hashchange", hashChangeListener);
 		return () => {
 			removeEventListener("hashchange", hashChangeListener);
 		};
 	});
-	const failedTabs = useMemo(() => decodeHash(window.location.hash.slice(2)), [windowOpened]);
 	const lostFocusListener = useCallback(() => {
 		if (document.visibilityState === "hidden") {
 			chrome.runtime.sendMessage(RESTOREPAGE_LOSTFOCUS).catch((error: unknown) => {
@@ -34,7 +39,10 @@ export default function TabDisplay() {
 		}
 	}, []);
 	useEffect(() => {
-		if (windowOpened) {
+		inspectHash();
+	}, [inspectHash]);
+	useEffect(() => {
+		if (failedTabs !== null) {
 			if (!failedTabs.length) {
 				addEventListener("visibilitychange", lostFocusListener);
 			}
@@ -42,9 +50,9 @@ export default function TabDisplay() {
 				removeEventListener("visibilitychange", lostFocusListener);
 			};
 		}
-	}, [failedTabs, windowOpened]);
+	}, [failedTabs, lostFocusListener]);
 	return (
-		(!windowOpened)
+		(failedTabs === null)
 			? <p className="anim-ellipsis">Your window is being restored.</p>
 			: (failedTabs.length === 0)
 			? (

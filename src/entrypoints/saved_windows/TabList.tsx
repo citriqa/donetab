@@ -17,7 +17,7 @@ export default function TabList(
 		return subscribeToFolder(windowId, () => {
 			void getTabs(windowId).then(set_tabs);
 		});
-	});
+	}, [windowId]);
 
 	return (
 		<div className="text-sm p-4 pb-0">

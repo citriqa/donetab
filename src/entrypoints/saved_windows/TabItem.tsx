@@ -18,7 +18,9 @@ export default function TabItem(
 ) {
 	const setPinnedTabs = useSetAtom(pinnedTabsAtom);
 	const [deleted, toggleDeleted] = useToggle(false);
-	const isPinned = useAtomValue(useMemo(() => atom((get) => get(pinnedTabsAtom).includes(tabData.id)), []));
+	const isPinned = useAtomValue(
+		useMemo(() => atom((get) => get(pinnedTabsAtom).includes(tabData.id)), [pinnedTabsAtom, tabData.id]),
+	);
 	return deleted
 		? <></>
 		: (

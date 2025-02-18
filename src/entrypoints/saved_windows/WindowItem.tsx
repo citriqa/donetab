@@ -8,7 +8,7 @@ import { unpropagated } from "@/utils/components";
 import { returnvoid } from "@/utils/generic";
 import { atom, useSetAtom } from "jotai";
 import { Accordion } from "radix-ui";
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import MingcuteBroomLine from "~icons/mingcute/broom-line";
 import MingcuteCheckLine from "~icons/mingcute/check-line";
 import MingcuteDownLine from "~icons/mingcute/down-line";
@@ -23,16 +23,25 @@ export default function WindowItem(
 		filteredTabs?: string[];
 	},
 ) {
-	function disableEditing() {
-		if (!titleInput.current) throw new Error("Title input ref not set");
-		void renameWindow(data.id, titleInput.current.value);
-		toggleTitleEditable();
-	}
 	const pinnedTabsAtom = useMemo(() => atom<string[]>([]), []);
 	const readPinnedTabs = useAtomReader(pinnedTabsAtom);
 	const setPinnedTabs = useSetAtom(pinnedTabsAtom);
 	const [isTitleEditable, toggleTitleEditable] = useToggle(false);
 	const titleInput = useRef<HTMLInputElement>(null);
+	const disableEditing = useCallback(() => {
+		if (!titleInput.current) throw new Error("Title input ref not set");
+		void renameWindow(data.id, titleInput.current.value);
+		toggleTitleEditable();
+	}, [data.id, toggleTitleEditable]);
+	const renameButtonHandler = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+		unpropagated(() => {
+			if (isTitleEditable) {
+				disableEditing();
+			} else {
+				toggleTitleEditable();
+			}
+		})(event);
+	}, [disableEditing, isTitleEditable, toggleTitleEditable]);
 
 	return (
 		<Accordion.Item
@@ -75,13 +84,7 @@ export default function WindowItem(
 						)}
 					<div className="join basis-[fit-content] shrink-max">
 						<button
-							onClick={unpropagated(() => {
-								if (isTitleEditable) {
-									disableEditing();
-								} else {
-									toggleTitleEditable();
-								}
-							})}
+							onClick={renameButtonHandler}
 							title={isTitleEditable ? "Save the window name" : "Edit the window name"}
 							className="join-item btn btn-secondary not-dark:btn-soft icon-button flex-wrap overflow-hidden shrink"
 						>

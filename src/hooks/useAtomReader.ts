@@ -7,6 +7,6 @@ export default function<T>(atom: Atom<T>): () => T {
 	return useAtomCallback(
 		useCallback((get) => {
 			return get(atom);
-		}, []),
+		}, [atom]),
 	);
 }
