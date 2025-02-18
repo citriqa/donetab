@@ -1,4 +1,4 @@
-import { INITIAL_URL, RESTORE_URL } from "../calculated_constants";
+import { RESTORE_URL } from "../calculated_constants";
 import { RESTORE_ANCHOR } from "../constants";
 import { getTabsAndIcons } from "./common";
 import { deleteWindowExcept } from "./other";
@@ -35,7 +35,7 @@ export async function restoreWindow(windowFolder: string) {
 	// we do not want to open to restore page yet since we need the hash to be the final one on initial load so it knows whether to trigger close-on-deselect.
 	// this URL cannot be specified upon window creation because it is set at some later point and may overwrite the restore page URL if the tabs are restored quickly
 	const initalTabNavigationPromise = chrome.tabs.update(initialTab.id, {
-		url: INITIAL_URL,
+		url: RESTORE_URL,
 	});
 
 	const failedTabs: typeof tabs = [];
@@ -52,12 +52,6 @@ export async function restoreWindow(windowFolder: string) {
 		});
 	}
 
-	const failedTabsAnchor = "#"
-		+ failedTabs.map(tab =>
-			[tab.url, tab.title, icons.get(tab.id) || ""].map(encodeURIComponent)
-				.join(",")
-		).join(";");
-
 	// if there's only few tabs to restore, the initial url may not even be pending yet at this point, which means it would overwrite the restore page without waiting for it here...
 	if ((await chrome.tabs.get(initialTab.id)).status === "loading") {
 		await new Promise<void>((resolve) => {
@@ -71,9 +65,17 @@ export async function restoreWindow(windowFolder: string) {
 		});
 	}
 
+	const failedTabsAnchor = "##"
+		+ failedTabs.map(tab =>
+			[tab.url, tab.title, icons.get(tab.id) || ""].map(encodeURIComponent)
+				.join(",")
+		).join(";");
+
+	// the empty anchor communicates that all tabs were restored
+	// cannot be just "#" because Firefox does not fire a hashchange event if the hash is empty
 	await initalTabNavigationPromise;
 	await chrome.tabs.update(initialTab.id, {
-		url: RESTORE_URL + (failedTabs.length ? failedTabsAnchor : ""),
+		url: RESTORE_URL + (failedTabs.length ? failedTabsAnchor : "##"),
 	});
 
 	void deleteWindowExcept(windowFolder);

@@ -41,7 +41,7 @@ export async function saveWindow() {
 
 	const filteredTabs = tabs.filter(tab =>
 		![
-			RESTORE_URL, // deliberately checking for exact match only, want to keep those with anchor (as they contain unrestored tabs)
+			RESTORE_URL + "##", // keep any with tabs in the anchor, as they record those that could not be restored previously
 			LIST_URL,
 		].includes((tab as Require<"url", chrome.tabs.Tab>).url) // since we have the tabs permission, the url property is guaranteed to be defined
 	);

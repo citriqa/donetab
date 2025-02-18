@@ -1,5 +1,5 @@
 import { saveWindow } from "@/utils/bookmarks/save";
-import { INITIAL_URL, LIST_URL, RESTORE_URL } from "@/utils/calculated_constants";
+import { LIST_URL, RESTORE_URL } from "@/utils/calculated_constants";
 import { DOUBLECLICK_INTERVAL_MS, PAGE_LOADED, RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
 import { returnvoid } from "@/utils/generic";
 import { defineBackground } from "wxt/sandbox";
@@ -64,7 +64,7 @@ export default defineBackground(() => {
 		const tab = await chrome.tabs.get(tabId);
 		if (tab.url) {
 			const tabUrlWithoutHash = tab.url.split("#", 1)[0];
-			if (![RESTORE_URL, INITIAL_URL, "about:blank"].includes(tabUrlWithoutHash)) {
+			if (![RESTORE_URL, "about:blank"].includes(tabUrlWithoutHash)) {
 				const matchingTab = lostFocusTabs.find(([_tab, window]) => window === windowId);
 				if (matchingTab) {
 					const [tab, _window] = matchingTab;
