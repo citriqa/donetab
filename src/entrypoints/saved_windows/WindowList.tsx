@@ -1,48 +1,56 @@
+import useSuspenseMemo from "@/hooks/useSuspenseMemo";
 import { extension_folder_id } from "@/utils/bookmarks/common";
 import { filterTabs, getWindows, subscribeToFolder } from "@/utils/bookmarks/list";
-import { Atom, useAtomValue } from "jotai";
+import { MaybeAwaited } from "@/utils/types";
+import { Atom, atom, useAtom, useAtomValue } from "jotai";
+import { withAtomEffect } from "jotai-effect";
 import { Accordion } from "radix-ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import * as R from "remeda";
+import EmptyInfo from "./EmptyInfo";
 import WindowItem from "./WindowItem";
 
-function EmptyInfo({ children }: { children: React.ReactNode | React.ReactNode[] }) {
-	return <h2 className="p-10 m-auto text-xl">{children}</h2>;
-}
+const windowsAtom = withAtomEffect(atom<MaybeAwaited<ReturnType<typeof getWindows>>>(getWindows()), (get, set) => {
+	const unsubscribe = extension_folder_id.then(id =>
+		subscribeToFolder(id, () => {
+			// we wait for resolution of the promise before updating the atom in order to not suspend the component while the list of windows is being refreshed
+			void getWindows().then(windows => {
+				set(windowsAtom, windows);
+			});
+		})
+	);
+	return () => {
+		void unsubscribe.then(fn => {
+			fn();
+		});
+	};
+});
 
 export default function WindowList({
 	filter,
 }: {
 	filter: Atom<string>;
 }) {
-	const filterVal = useAtomValue(filter);
-	const [windows, set_windows] = useState<Awaited<ReturnType<typeof getWindows>>>([]);
-	useEffect(() => {
-		void getWindows().then(set_windows);
-		const unsubscribe = extension_folder_id.then(id =>
-			subscribeToFolder(id, () => {
-				void getWindows().then(set_windows);
-			})
-		);
-		return () => {
-			void unsubscribe.then(fn => {
-				fn();
-			});
-		};
-	}, []);
-	const [filteredTabs, setFilteredTabs] = useState<Map<string, string[]> | null>(null);
-	useEffect(() => {
-		if (filterVal === "") {
-			setFilteredTabs(null);
-		} else {
-			void filterTabs(filterVal).then(setFilteredTabs);
-		}
-	}, [filterVal, windows]); // `windows` is not used in the effect directly but the search result should update when the set of saved windows does
+	const windows = useAtomValue(windowsAtom);
+	const filteredTabsAtom = useSuspenseMemo(() =>
+		withAtomEffect(atom<Map<string, string[]> | null>(null), (get, set) => {
+			if (get(filter) === "") {
+				set(filteredTabsAtom, null);
+			} else {
+				void filterTabs(get(filter)).then(val => {
+					set(filteredTabsAtom, val);
+				});
+			}
+		})
+	);
+	const filteredTabs = useAtomValue(filteredTabsAtom);
+	const filteredOpenItemsAtom = useSuspenseMemo(() =>
+		withAtomEffect(atom<string[] | undefined>(undefined), (get, set) => {
+			set(filteredOpenItemsAtom, get(filteredTabsAtom)?.keys().toArray());
+		})
+	);
 	const [openItems, setOpenItems] = useState<string[]>([]);
-	const [filteredOpenItems, setFilteredOpenItems] = useState<string[] | undefined>();
-	useEffect(() => {
-		setFilteredOpenItems(filteredTabs?.keys().toArray());
-	}, [filteredTabs]);
+	const [filteredOpenItems, setFilteredOpenItems] = useAtom(filteredOpenItemsAtom);
 	return (
 		windows.length === 0
 			? <EmptyInfo>No saved windows...</EmptyInfo>

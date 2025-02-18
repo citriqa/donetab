@@ -6,6 +6,7 @@ import { deleteWindowExcept, renameWindow } from "@/utils/bookmarks/other";
 import { restoreWindow } from "@/utils/bookmarks/restore";
 import { unpropagated } from "@/utils/components";
 import { returnvoid } from "@/utils/generic";
+import { Suspense } from "@lomray/consistent-suspense";
 import { atom, useSetAtom } from "jotai";
 import { Accordion } from "radix-ui";
 import { useMemo, useRef } from "react";
@@ -126,12 +127,14 @@ export default function WindowItem(
 					</div>
 				</div>
 			</Accordion.Header>
-			<Accordion.Content className="overflow-hidden">
-				<TabList
-					windowId={data.id}
-					pinnedTabsAtom={pinnedTabsAtom}
-					filtered={filteredTabs}
-				/>
+			<Accordion.Content className="pp-4 overflow-hidden">
+				<Suspense fallback={<p className="pc">Loading Tabs...</p>}>
+					<TabList
+						windowId={data.id}
+						pinnedTabsAtom={pinnedTabsAtom}
+						filtered={filteredTabs}
+					/>
+				</Suspense>
 			</Accordion.Content>
 		</Accordion.Item>
 	);
