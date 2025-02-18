@@ -1,6 +1,7 @@
 import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
 import { LIST_URL, RESTORE_URL } from "../calculated_constants";
+import { RESTORE_ANCHOR } from "../constants";
 import { Require } from "../types";
 import { extension_folder_id } from "./common";
 
@@ -17,22 +18,19 @@ export async function compressImage(url: string) {
 }
 
 export async function saveWindow() {
-	const [tabs, window] = await Promise.all([
-		chrome.tabs.query({
-			"currentWindow": true,
-		}),
-		chrome.windows.getCurrent(),
-	]);
+	const window = await chrome.windows.getCurrent();
+	if (window.id === undefined) {
+		throw new Error("window to be saved has no ID");
+	}
+	const tabs = await chrome.tabs.query({
+		windowId: window.id,
+	});
 
 	if (
 		// must match exactly, an anchor would mean restoration is complete
 		tabs.some(tab => tab.url === RESTORE_URL)
 	) {
 		throw new Error("window to be saved is currently being restored");
-	}
-
-	if (window.id === undefined) {
-		throw new Error("window to be saved has no ID");
 	}
 
 	void chrome.windows.getAll({
@@ -46,11 +44,85 @@ export async function saveWindow() {
 		state: "minimized",
 	});
 
-	const filteredTabs = tabs.filter(tab =>
+	function hasPendingNavigation(tab: chrome.tabs.Tab) {
+		// we need to detect tabs with a pending navigation, as they don't have the right URL yet. on Chrome, pending tabs have a pendingUrl, but on Firefox that is not supported. on Firefox, pending tabs will have a status of "loading", which tabs without a pending navigation can have on Chrome, so neither indicator works in both environments
+		return import.meta.env.FIREFOX ? tab.status === "loading" : tab.pendingUrl;
+	}
+
+	const incompleteTabs = tabs.filter(tab =>
+		tab.id !== undefined // should never be the case but just to be correct
+		&& hasPendingNavigation(tab)
+	);
+	if (incompleteTabs.length) {
+		const tabIds = new Set<number>(
+			incompleteTabs.map(tab => tab.id as number /* we've filtered out tabs without an id above */),
+		);
+		const allTabsComplete = new Promise<void>((resolve) => {
+			const interval = setInterval(() => {
+				tabIds.forEach(tabId => {
+					void chrome.tabs.get(tabId).then(tab => {
+						if (!hasPendingNavigation(tab)) {
+							removeTab(tabId);
+						}
+					});
+				});
+			}, 1000);
+			function removeTab(tabId: number) {
+				tabIds.delete(tabId);
+				if (tabIds.size === 0) {
+					chrome.tabs.onUpdated.removeListener(changeListener);
+					clearInterval(interval);
+					resolve();
+				}
+			}
+			function changeListener(tabId: number, changeInfo: chrome.tabs.TabChangeInfo) {
+				if (tabIds.has(tabId) && changeInfo.url !== undefined) {
+					removeTab(tabId);
+				}
+			}
+			chrome.tabs.onUpdated.addListener(changeListener);
+		});
+		await allTabsComplete;
+	}
+
+	const completedTabs = await chrome.tabs.query({
+		windowId: window.id,
+	});
+
+	if (completedTabs.some(tab => tab.url === undefined)) {
+		throw new Error("window to be saved has tabs with no URL");
+	}
+
+	const mappedTabs = (
+		completedTabs as Require<"url", chrome.tabs.Tab>[] // we've checked that no url is undefined above
+	).map(
+		tab => {
+			function decodeHref(href: string) {
+				const [withoutHash, hash] = href.split(RESTORE_ANCHOR);
+				const [title, icon, ...rest] = hash.slice(1).split("#");
+				const url = withoutHash + (rest.length ? "#" + rest.join("#") : "");
+				return {
+					id: tab.id,
+					url: url,
+					title: decodeURIComponent(title),
+					favIconUrl: decodeURIComponent(icon),
+					index: tab.index,
+				};
+			}
+			if (tab.url.includes(RESTORE_ANCHOR)) {
+				return decodeHref(tab.url);
+			} else {
+				const { id, url, title, favIconUrl, index } = tab;
+				return { id, url, title, favIconUrl, index };
+			}
+		},
+	);
+
+	const filteredTabs = mappedTabs.filter(tab =>
 		![
 			RESTORE_URL + "##", // keep any with tabs in the anchor, as they record those that could not be restored previously
 			LIST_URL,
-		].includes((tab as Require<"url", chrome.tabs.Tab>).url) // since we have the tabs permission, the url property is guaranteed to be defined
+		].includes(tab.url)
 	);
 
 	if (filteredTabs.length) {
