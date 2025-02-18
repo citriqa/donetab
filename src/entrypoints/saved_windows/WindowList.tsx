@@ -16,7 +16,7 @@ export default function WindowList({
 	filter: Atom<string>;
 }) {
 	const filterVal = useAtomValue(filter);
-	const [windows, set_windows] = useState<Awaited<ReturnType<typeof getWindows>>>([]);
+	const [windows, set_windows] = useState<Awaited<ReturnType<typeof getWindows>> | null>(null);
 	useEffect(() => {
 		void getWindows().then(set_windows);
 		const unsubscribe = extension_folder_id.then(id =>
@@ -44,7 +44,9 @@ export default function WindowList({
 		setFilteredOpenItems(filteredTabs?.keys().toArray());
 	}, [filteredTabs]);
 	return (
-		windows.length === 0
+		windows === null
+			? <></> // fallback while the list of windows is loading
+			: windows.length === 0
 			? <EmptyInfo>No saved windows...</EmptyInfo>
 			: filteredTabs !== null && filteredTabs.size === 0
 			? <EmptyInfo>No matching tabs...</EmptyInfo>
