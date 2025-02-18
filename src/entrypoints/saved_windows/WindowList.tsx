@@ -1,8 +1,9 @@
 import { extension_folder_id } from "@/utils/bookmarks/common";
 import { filterTabs, getWindows, subscribeToFolder } from "@/utils/bookmarks/list";
-import { Atom, useAtomValue } from "jotai";
+import { Atom, atom, useAtom, useAtomValue } from "jotai";
+import { atomEffect } from "jotai-effect";
 import { Accordion } from "radix-ui";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as R from "remeda";
 import WindowItem from "./WindowItem";
 
@@ -15,7 +16,6 @@ export default function WindowList({
 }: {
 	filter: Atom<string>;
 }) {
-	const filterVal = useAtomValue(filter);
 	const [windows, set_windows] = useState<Awaited<ReturnType<typeof getWindows>> | null>(null);
 	useEffect(() => {
 		void getWindows().then(set_windows);
@@ -30,14 +30,21 @@ export default function WindowList({
 			});
 		};
 	}, []);
-	const [filteredTabs, setFilteredTabs] = useState<Map<string, string[]> | null>(null);
-	useEffect(() => {
-		if (filterVal === "") {
-			setFilteredTabs(null);
-		} else {
-			void filterTabs(filterVal).then(setFilteredTabs);
-		}
-	}, [filterVal, windows]); // `windows` is not used in the effect directly but the search result should update when the set of saved windows does
+	const filteredTabsAtom = useMemo(() => atom<Map<string, string[]> | null>(null), []);
+	const filteredTabs = useAtomValue(filteredTabsAtom);
+	useAtom(useMemo(() =>
+		atomEffect((get, set) => {
+			const originalFilter = get(filter);
+			if (originalFilter) {
+				void filterTabs(originalFilter).then((val) => {
+					if (originalFilter === get(filter)) {
+						set(filteredTabsAtom, val);
+					}
+				});
+			} else {
+				set(filteredTabsAtom, null);
+			}
+		}), [filter, filteredTabsAtom]));
 	const [openItems, setOpenItems] = useState<string[]>([]);
 	const [filteredOpenItems, setFilteredOpenItems] = useState<string[] | undefined>();
 	useEffect(() => {

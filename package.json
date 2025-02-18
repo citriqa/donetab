@@ -42,6 +42,7 @@
 	"dependencies": {
 		"image-resize-compress": "~1.1.0",
 		"jotai": "^2.12.1",
+		"jotai-effect": "^2.0.1",
 		"radix-ui": "^1.1.3",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",

@@ -14,6 +14,9 @@ importers:
       jotai:
         specifier: ^2.12.1
         version: 2.12.1(@types/react@19.0.8)(react@19.0.0)
+      jotai-effect:
+        specifier: ^2.0.1
+        version: 2.0.1(jotai@2.12.1(@types/react@19.0.8)(react@19.0.0))
       radix-ui:
         specifier: ^1.1.3
         version: 1.1.3(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -3096,6 +3099,12 @@ packages:
   jiti@2.4.2:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
     hasBin: true
+
+  jotai-effect@2.0.1:
+    resolution: {integrity: sha512-jZw18vUzlerIMQCaB75Ndxr9+6BR/fCt7Ah0CO2RpR5UhtBbXurgIprAZoVSzADaWoTN/qj0pyT6IQQWWP6dpA==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      jotai: '>=2.12.1'
 
   jotai@2.12.1:
     resolution: {integrity: sha512-VUW0nMPYIru5g89tdxwr9ftiVdc/nGV9jvHISN8Ucx+m1vI9dBeHemfqYzEuw5XSkmYjD/MEyApN9k6yrATsZQ==}
@@ -7664,6 +7673,10 @@ snapshots:
   jiti@1.21.7: {}
 
   jiti@2.4.2: {}
+
+  jotai-effect@2.0.1(jotai@2.12.1(@types/react@19.0.8)(react@19.0.0)):
+    dependencies:
+      jotai: 2.12.1(@types/react@19.0.8)(react@19.0.0)
 
   jotai@2.12.1(@types/react@19.0.8)(react@19.0.0):
     optionalDependencies:
