@@ -1,23 +1,30 @@
 import Brand from "@/components/Brand";
 import { WriteableAtom } from "@/utils/types";
 import { useSetAtom } from "jotai";
-import { useRef } from "react";
-import * as R from "remeda";
+import { useCallback, useRef } from "react";
 import MingcuteCloseLine from "~icons/mingcute/close-line";
 
 export default function Header({ filter }: { filter: WriteableAtom<string> }) {
+	const filterTimeout = useRef<NodeJS.Timeout | null>(null);
 	const searchInput = useRef<HTMLInputElement>(null);
 	const filterUpdate = useSetAtom(filter);
-	const filterThrottle = R.funnel(filterUpdate, {
-		minQuietPeriodMs: 200,
-		triggerAt: "end",
-		reducer: (_accumulator: string | undefined, updated: string) => updated,
-	});
+	const filterThrottle = useCallback((value: string) => {
+		if (filterTimeout.current) {
+			clearTimeout(filterTimeout.current);
+		}
+		if (value) {
+			filterTimeout.current = setTimeout(() => {
+				filterUpdate(value);
+			}, Math.max(1000 - (value.length - 1) * 150, 300));
+		} else {
+			filterUpdate(value);
+			filterTimeout.current = null;
+		}
+	}, [filterUpdate]);
 	const clearSearch = () => {
 		if (searchInput.current) {
 			searchInput.current.value = "";
-			filterThrottle.call("");
-			filterUpdate("");
+			filterThrottle("");
 			searchInput.current.blur();
 		}
 	};
@@ -38,7 +45,7 @@ export default function Header({ filter }: { filter: WriteableAtom<string> }) {
 						}
 					}}
 					onChange={e => {
-						filterThrottle.call(e.target.value);
+						filterThrottle(e.target.value);
 					}}
 					placeholder="Search tabs"
 				/>
