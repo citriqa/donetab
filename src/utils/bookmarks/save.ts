@@ -24,6 +24,13 @@ export async function saveWindow() {
 		chrome.windows.getCurrent(),
 	]);
 
+	if (
+		// must match exactly, an anchor would mean restoration is complete
+		tabs.some(tab => tab.url === RESTORE_URL)
+	) {
+		throw new Error("window to be saved is currently being restored");
+	}
+
 	if (window.id === undefined) {
 		throw new Error("window to be saved has no ID");
 	}
