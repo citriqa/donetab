@@ -33,11 +33,12 @@ export default defineContentScript({
 	"world": "MAIN", // isolated world scripts are delayed in their injection
 	main() {
 		if (location.hash.startsWith(RESTORE_ANCHOR)) {
-			window.stop(); // prevents loading the original page
-			window.onfocus = refresh; // visibilityState starts out as "visible" in Chrome even when the tab is opened in the background
-			if (document.hasFocus()) refresh(); // the tab may already be focused if the user is very fast at switching to it
+			document.replaceChildren(); // hopefully keeps the browser from wasting time with the original page
 			const { title, favicon } = decodeAnchor(location.hash);
 			setTitleAndIcon(title, favicon);
+			window.stop(); // prevents loading the original page, must happen after setting the favicon because otherwise Chrome often refuses to respect it
+			window.onfocus = refresh; // visibilityState starts out as "visible" in Chrome even when the tab is opened in the background
+			if (document.hasFocus()) refresh(); // the tab may already be focused if the user is very fast at switching to it
 		}
 	},
 });
