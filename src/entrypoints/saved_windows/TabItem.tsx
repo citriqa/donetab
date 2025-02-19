@@ -35,7 +35,7 @@ export default function TabItem(
 	return deleted
 		? <></>
 		: (
-			<li className="flex items-center rounded-sm odd:bg-base-150 has-[.TRASHBUTTON:hover]:bg-error-bg px-2 py-1 gap-2 my-0.5">
+			<li className="flex items-center rounded-selector odd:bg-base-150 has-[.TRASHBUTTON:hover]:bg-error-bg px-2 py-1 gap-2 my-0.5">
 				<Favicon src={tabData.icon} className="size-4" />
 				<button
 					className="group/pinbutton hover:text-primary icon-button cursor-pointer"

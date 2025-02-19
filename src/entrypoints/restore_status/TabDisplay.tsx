@@ -70,7 +70,7 @@ export default function TabDisplay() {
 					</p>
 					<ul>
 						{failedTabs.map(tab => (
-							<li className="odd:bg-base-150 px-2 py-1 gap-2 my-0.5 rounded-sm " key={tab.url}>
+							<li className="odd:bg-base-150 px-2 py-1 gap-2 my-0.5 rounded-selector " key={tab.url}>
 								<a
 									className="cursor-pointer flex gap-2 items-center justify-between"
 									rel="noreferrer"
