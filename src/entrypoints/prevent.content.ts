@@ -1,5 +1,6 @@
-import { RESTORE_ANCHOR } from "@/utils/constants";
+import { PAGE_LOADED, RESTORE_ANCHOR } from "@/utils/constants";
 import { decodeAnchor, originalLocation } from "@/utils/content";
+import { panic } from "@/utils/generic";
 import { defineContentScript } from "wxt/sandbox";
 
 function setTitleAndIcon(title: string, favicon: string) {
@@ -10,21 +11,27 @@ function setTitleAndIcon(title: string, favicon: string) {
 		const faviconLink = newHead.appendChild(document.createElement("link"));
 		faviconLink.rel = "icon";
 		faviconLink.href = favicon;
-		// using this we can await the favicon being loaded before discarding the tab
-		const faviconImage = newBody.appendChild(document.createElement("img"));
-		faviconImage.src = favicon;
-		// avoiding display and visibility styles so the browser doesn't optimize the image away
-		faviconImage.style.opacity = "0";
 	}
 	const newHtml = document.createElement("html");
 	newHtml.appendChild(newHead);
 	newHtml.appendChild(newBody);
-	document.replaceChildren(); // needed for the subsequent one not to error in Firefox
 	document.replaceChildren(newHtml);
 }
 
 function refresh() {
 	location.replace(originalLocation(location));
+}
+
+function cleanAndDiscard() {
+	history.replaceState(
+		null,
+		"",
+		originalLocation(location),
+	);
+
+	chrome.runtime.sendMessage(PAGE_LOADED).catch((error: unknown) => {
+		panic("failed to send page loaded message:", error);
+	});
 }
 
 export default defineContentScript({
@@ -33,12 +40,13 @@ export default defineContentScript({
 	"world": "MAIN", // isolated world scripts are delayed in their injection
 	main() {
 		if (location.hash.startsWith(RESTORE_ANCHOR)) {
-			document.replaceChildren(); // hopefully keeps the browser from wasting time with the original page
+			document.replaceChildren(); // hopefully keeps the browser from wasting time with the original page; also needed for subsequent replaceChildren not to error in Firefox
 			const { title, favicon } = decodeAnchor(location.hash);
 			setTitleAndIcon(title, favicon);
-			window.stop(); // prevents loading the original page, must happen after setting the favicon because otherwise Chrome often refuses to respect it
-			window.onfocus = refresh; // visibilityState starts out as "visible" in Chrome even when the tab is opened in the background
-			if (document.hasFocus()) refresh(); // the tab may already be focused if the user is very fast at switching to it
+			window.stop(); // this also prevents some favicons from being adopted on Chrome but there's not much we can do about it without making window restoration a lot slower (because it prevents a large number of subresource requests)
+			window.onfocus = refresh;
+			if (document.hasFocus()) refresh();
+			cleanAndDiscard();
 		}
 	},
 });

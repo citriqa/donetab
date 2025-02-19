@@ -1,4 +1,3 @@
-import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
 import { LIST_URL, RESTORE_URL } from "../calculated_constants";
 import { RESTORE_ANCHOR } from "../constants";
@@ -7,15 +6,24 @@ import { Require } from "../types";
 import { extension_folder_id } from "./common";
 
 export async function compressImage(url: string) {
-	const blob = await fromURL(
-		url,
-		100,
-		32,
-		32,
-		"webp",
-	);
-	const newURL = await blobToURL(blob);
-	return ((newURL.length * 2) < url.length) ? newURL : url;
+	const resource = await fetch(url);
+	const blob = await resource.blob();
+	if (blob.type === "image/svg+xml") {
+		return "data:image/svg+xml," + encodeURIComponent(await blob.text());
+	}
+	const bitmap = await createImageBitmap(blob);
+	const canvas = new OffscreenCanvas(32, 32);
+	const context = canvas.getContext("2d");
+	context?.drawImage(bitmap, 0, 0, 32, 32);
+	const newBlob = await canvas.convertToBlob({ type: "image/webp" });
+	const reader = new FileReader();
+	reader.readAsDataURL(newBlob);
+	const newURL = await new Promise<string>((resolve) => {
+		reader.onload = () => {
+			resolve(reader.result as string); // known to be string because we used readAsDataURL
+		};
+	});
+	return newURL;
 }
 
 export async function saveWindow() {
@@ -153,8 +161,8 @@ export async function saveWindow() {
 		const icons = filteredTabs.map(R.prop("favIconUrl"));
 		for (const [index, id] of createdBookmarks.entries()) {
 			const iconURL = icons[index];
-			if (iconURL !== undefined) {
-				void (import.meta.env.FIREFOX ? compressImage(iconURL) : Promise.resolve(iconURL)).then(async (iconURL) =>
+			if (iconURL) { // could be undefined or, importantly, the empty string
+				void compressImage(iconURL).then(async (iconURL) =>
 					chrome.bookmarks.create({
 						parentId: (await iconFolder).id,
 						title: id,
