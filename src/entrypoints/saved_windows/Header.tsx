@@ -1,7 +1,7 @@
 import Brand from "@/components/Brand";
 import { WriteableAtom } from "@/utils/types";
 import { useSetAtom } from "jotai";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import MingcuteCloseLine from "~icons/mingcute/close-line";
 
 export default function Header({ filter }: { filter: WriteableAtom<string> }) {
@@ -28,9 +28,15 @@ export default function Header({ filter }: { filter: WriteableAtom<string> }) {
 			searchInput.current.blur();
 		}
 	}, [filterThrottle]);
-	const inputKeyHandler = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+	const keyHandler = useCallback((event: KeyboardEvent) => {
 		if (event.key === "Escape") clearSearch();
 	}, [clearSearch]);
+	useEffect(() => {
+		addEventListener("keyup", keyHandler);
+		return () => {
+			removeEventListener("keyup", keyHandler);
+		};
+	}, [keyHandler]);
 	const inputChangeHandler = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
 		filterThrottle(event.target.value);
 	}, [filterThrottle]);
@@ -46,7 +52,6 @@ export default function Header({ filter }: { filter: WriteableAtom<string> }) {
 					className="grow"
 					type="grow"
 					spellCheck={false}
-					onKeyUp={inputKeyHandler}
 					onChange={inputChangeHandler}
 					placeholder="Search tabs"
 				/>
