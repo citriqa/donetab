@@ -5,6 +5,8 @@ import { panic } from "../generic";
 import { Require } from "../types";
 import { extension_folder_id } from "./common";
 
+const currentlyClosingWindows = new Set<number>();
+
 export async function compressImage(url: string) {
 	const resource = await fetch(url);
 	const blob = await resource.blob();
@@ -42,13 +44,19 @@ export async function saveWindow() {
 		panic("window to be saved is currently being restored");
 	}
 
+	currentlyClosingWindows.add(window.id);
+
 	void chrome.windows.getAll({
 		windowTypes: ["normal"],
-	}).then(async (windows) => (windows.length < 2 && chrome.windows.create({
-		"type": "normal",
-		"focused": true,
-		"url": LIST_URL,
-	})));
+	}).then(async (windows) => {
+		if (!(new Set(windows.map(w => w.id))).difference(currentlyClosingWindows).size) {
+			await chrome.windows.create({
+				"type": "normal",
+				"focused": true,
+				"url": LIST_URL,
+			});
+		}
+	});
 	void chrome.windows.update(window.id, {
 		state: "minimized",
 	});
@@ -177,4 +185,5 @@ export async function saveWindow() {
 	} else {
 		void chrome.windows.remove(window.id);
 	}
+	currentlyClosingWindows.delete(window.id);
 }
