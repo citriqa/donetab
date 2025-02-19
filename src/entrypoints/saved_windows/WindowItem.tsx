@@ -31,19 +31,22 @@ export default function WindowItem(
 	const setPinnedTabs = useSetAtom(pinnedTabsAtom);
 	const [isTitleEditable, toggleTitleEditable] = useToggle(false);
 	const titleInput = useRef<HTMLInputElement>(null);
-	const disableEditing = useCallback(() => {
+	const confirmName = useCallback(() => {
 		if (!titleInput.current) panic("Title input ref not set");
 		void renameWindow(data.id, titleInput.current.value);
 		toggleTitleEditable();
 	}, [data.id, toggleTitleEditable]);
+	const abandonEditing = useCallback(() => {
+		if (isTitleEditable) toggleTitleEditable();
+	}, [isTitleEditable, toggleTitleEditable]);
 	const renameButtonHandler = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
 		if (isTitleEditable) {
-			disableEditing();
+			confirmName();
 		} else {
 			toggleTitleEditable();
 		}
 		event.stopPropagation();
-	}, [disableEditing, isTitleEditable, toggleTitleEditable]);
+	}, [confirmName, isTitleEditable, toggleTitleEditable]);
 	const restoreButtonHandler = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
 		void restoreWindow(data.id).then(() => {
 			window.close();
@@ -60,8 +63,16 @@ export default function WindowItem(
 		event.stopPropagation();
 	}, [data.id, readPinnedTabs, setPinnedTabs]);
 	const inputKeyHandler = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === "Enter") disableEditing();
-	}, [disableEditing]);
+		switch (event.key) {
+			case "Escape":
+				abandonEditing();
+				break;
+			case "Enter":
+				confirmName();
+				break;
+		}
+		event.stopPropagation();
+	}, [abandonEditing, confirmName]);
 	const concreteToggleHandle = useCallback(() => {
 		toggleHandle(data.id);
 	}, [data.id, toggleHandle]);
