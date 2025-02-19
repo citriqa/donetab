@@ -81,7 +81,7 @@ export default function WindowItem(
 				>
 					<Accordion.Trigger
 						aria-label="Show/hide tabs of window"
-						className="ml-[8px] shrink-0"
+						className="ml-[8px] shrink-0 cursor-pointer"
 					>
 						<MingcuteDownLine className="size-6 w-[1.5rem] group-data-[state=open]:rotate-180 transition-transform" />
 					</Accordion.Trigger>
