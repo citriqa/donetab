@@ -1,5 +1,6 @@
 import { RESTORE_URL } from "../calculated_constants";
 import { RESTORE_ANCHOR } from "../constants";
+import { panic } from "../generic";
 import { getTabsAndIcons } from "./common";
 import { deleteWindowExcept } from "./other";
 
@@ -29,7 +30,7 @@ export async function restoreWindow(windowFolder: string) {
 	const initialTab = newWindow.tabs?.[0];
 
 	if (initialTab?.id === undefined) {
-		throw new Error("could not acquire reference to initial tab");
+		panic("could not acquire reference to initial tab");
 	}
 
 	// we do not want to open to restore page yet since we need the hash to be the final one on initial load so it knows whether to trigger close-on-deselect.

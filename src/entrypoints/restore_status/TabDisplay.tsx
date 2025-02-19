@@ -1,5 +1,6 @@
 import Favicon from "@/components/Favicon";
-import { RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
+import { EXTENSION_NAME, RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
+import { panic } from "@/utils/generic";
 import { useCallback, useEffect, useState } from "react";
 
 function decodeHash(hash: string) {
@@ -34,7 +35,7 @@ export default function TabDisplay() {
 	const lostFocusListener = useCallback(() => {
 		if (document.visibilityState === "hidden") {
 			chrome.runtime.sendMessage(RESTOREPAGE_LOSTFOCUS).catch((error: unknown) => {
-				console.error("[DoneTab] Failed to send message to background script:", error);
+				panic("failed to send message to background script:", error);
 			});
 		}
 	}, []);
@@ -65,7 +66,7 @@ export default function TabDisplay() {
 				<>
 					<p>
 						{failedTabs.length === 1 ? "This saved tab" : "These saved tabs"}{" "}
-						<strong>cannot be reopened by DoneTab</strong> due to browser limitations:
+						<strong>cannot be reopened by {EXTENSION_NAME}</strong> due to browser limitations:
 					</p>
 					<ul>
 						{failedTabs.map(tab => (

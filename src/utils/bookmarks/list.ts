@@ -1,5 +1,5 @@
 import * as R from "remeda";
-import { retryPromise, returnvoid } from "../generic";
+import { panic, retryPromise, returnvoid } from "../generic";
 import { extension_folder_id, getTabsAndIcons } from "./common";
 
 export function getProps(bookmark: chrome.bookmarks.BookmarkTreeNode) {
@@ -60,7 +60,7 @@ export async function filterTabs(query: string) {
 	const preparedQuery = query.normalize().toLowerCase().split(/\s+/);
 	const windows = R.only(await chrome.bookmarks.getSubTree(await extension_folder_id))?.children;
 	if (windows === undefined) {
-		throw new Error("No children of extension bookmarks folder returned");
+		panic("no children of extension bookmarks folder returned");
 	}
 	const matchingTabs = windows.map(window => [
 		window.id,

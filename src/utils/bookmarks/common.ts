@@ -1,6 +1,6 @@
 import * as R from "remeda";
 import { EXTENSION_FOLDER_NAME } from "../constants";
-import { retryPromise, returnvoid } from "../generic";
+import { panic, retryPromise, returnvoid } from "../generic";
 import { Require } from "../types";
 
 async function getStorageFolder() {
@@ -13,7 +13,7 @@ async function getStorageFolder() {
 		title: EXTENSION_FOLDER_NAME,
 	});
 	if (searchResult.length > 1) {
-		throw new Error("multiple storage folders found");
+		panic("multiple storage folders found");
 	} else {
 		return ((searchResult.length === 1) ? searchResult[0] : await newFolder()).id;
 	}

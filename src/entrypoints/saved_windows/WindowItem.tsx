@@ -4,6 +4,7 @@ import useToggle from "@/hooks/useToggle";
 import { getWindows } from "@/utils/bookmarks/list";
 import { deleteWindowExcept, renameWindow } from "@/utils/bookmarks/other";
 import { restoreWindow } from "@/utils/bookmarks/restore";
+import { panic } from "@/utils/generic";
 import { atom, useSetAtom } from "jotai";
 import { Accordion } from "radix-ui";
 import { useCallback, useMemo, useRef } from "react";
@@ -31,7 +32,7 @@ export default function WindowItem(
 	const [isTitleEditable, toggleTitleEditable] = useToggle(false);
 	const titleInput = useRef<HTMLInputElement>(null);
 	const disableEditing = useCallback(() => {
-		if (!titleInput.current) throw new Error("Title input ref not set");
+		if (!titleInput.current) panic("Title input ref not set");
 		void renameWindow(data.id, titleInput.current.value);
 		toggleTitleEditable();
 	}, [data.id, toggleTitleEditable]);

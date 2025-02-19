@@ -1,7 +1,7 @@
 import { saveWindow } from "@/utils/bookmarks/save";
 import { LIST_URL, RESTORE_URL } from "@/utils/calculated_constants";
 import { DOUBLECLICK_INTERVAL_MS, PAGE_LOADED, RESTOREPAGE_LOSTFOCUS } from "@/utils/constants";
-import { returnvoid } from "@/utils/generic";
+import { panic, returnvoid } from "@/utils/generic";
 import { defineBackground } from "wxt/sandbox";
 
 function removeTab(tabId: number) {
@@ -9,7 +9,7 @@ function removeTab(tabId: number) {
 	function removeCallback() {
 		chrome.tabs.remove(tabId)
 			.catch((error: unknown) => {
-				console.error("[DoneTab] Failed to remove tab:", error);
+				panic("failed to remove tab", error);
 			});
 	}
 	if (import.meta.env.FIREFOX) {
@@ -37,7 +37,7 @@ export default defineBackground(() => {
 				if (sender.tab?.id) {
 					chrome.tabs.discard(sender.tab.id)
 						.catch((error: unknown) => {
-							console.error("[DoneTab] Failed to discard tab:", error);
+							panic("failed to discard tab", error);
 						});
 				}
 				break;

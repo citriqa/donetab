@@ -2,20 +2,21 @@ import tailwindcss from "@tailwindcss/vite";
 import Icons from "unplugin-icons/vite";
 import eslint from "vite-plugin-eslint2";
 import { defineConfig, WxtViteConfig } from "wxt";
+import { EXTENSION_IDENTIFIER, EXTENSION_NAME } from "./src/utils/constants";
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
 	manifest: {
-		name: "DoneTab",
+		name: EXTENSION_NAME,
 		description: "Rapidly save and restore windows",
-		homepage_url: "https://github.com/citriqa/donetab",
+		homepage_url: `https://github.com/citriqa/${EXTENSION_IDENTIFIER}`,
 		browser_specific_settings: {
 			gecko: {
-				id: "donetab@citri.qa",
+				id: `${EXTENSION_IDENTIFIER}@citri.qa`,
 			},
 		},
 		action: { // action property is needed to enable toolbar click events
-			"default_title": "DoneTab - double click to save window",
+			"default_title": `${EXTENSION_NAME} - double click to save window`,
 		},
 		permissions: [
 			"tabs",

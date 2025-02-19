@@ -2,6 +2,7 @@ import { blobToURL, fromURL } from "image-resize-compress";
 import * as R from "remeda";
 import { LIST_URL, RESTORE_URL } from "../calculated_constants";
 import { RESTORE_ANCHOR } from "../constants";
+import { panic } from "../generic";
 import { Require } from "../types";
 import { extension_folder_id } from "./common";
 
@@ -20,7 +21,7 @@ export async function compressImage(url: string) {
 export async function saveWindow() {
 	const window = await chrome.windows.getCurrent();
 	if (window.id === undefined) {
-		throw new Error("window to be saved has no ID");
+		panic("window to be saved has no ID");
 	}
 	const tabs = await chrome.tabs.query({
 		windowId: window.id,
@@ -30,7 +31,7 @@ export async function saveWindow() {
 		// must match exactly, an anchor would mean restoration is complete
 		tabs.some(tab => tab.url === RESTORE_URL)
 	) {
-		throw new Error("window to be saved is currently being restored");
+		panic("window to be saved is currently being restored");
 	}
 
 	void chrome.windows.getAll({
@@ -90,7 +91,7 @@ export async function saveWindow() {
 	});
 
 	if (completedTabs.some(tab => tab.url === undefined)) {
-		throw new Error("window to be saved has tabs with no URL");
+		panic("window to be saved has tabs with no URL");
 	}
 
 	const mappedTabs = (

@@ -1,5 +1,6 @@
 import { PAGE_LOADED, RESTORE_ANCHOR } from "@/utils/constants";
 import { originalLocation } from "@/utils/content";
+import { panic } from "@/utils/generic";
 import { defineContentScript } from "wxt/sandbox";
 
 function cleanAndDiscard() {
@@ -10,7 +11,7 @@ function cleanAndDiscard() {
 	);
 
 	chrome.runtime.sendMessage(PAGE_LOADED).catch((error: unknown) => {
-		console.error("[DoneTab] Failed to send page loaded message:", error);
+		panic("failed to send page loaded message:", error);
 	});
 }
 
