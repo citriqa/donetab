@@ -1,4 +1,5 @@
-import { SetStateAction, WritableAtom } from "jotai";
+import { SetStateAction } from "jotai";
+import { WritableAtom } from "jotai";
 
 export type Require<P extends keyof T, T> = Omit<T, P> & Required<Pick<T, P>>;
 
