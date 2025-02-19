@@ -57,6 +57,19 @@ export default function WindowList({
 			index === -1 ? [...currentOpenItems, id] : R.splice(currentOpenItems, index, 1, []),
 		);
 	}, [filteredOpenItems, filteredTabs, openItems]);
+	const keyHandler = useCallback((event: KeyboardEvent) => {
+		if (event.key === "Escape") {
+			if (!filteredTabs) {
+				setOpenItems([]);
+			}
+		}
+	}, [filteredTabs]);
+	useEffect(() => {
+		addEventListener("keyup", keyHandler);
+		return () => {
+			removeEventListener("keyup", keyHandler);
+		};
+	}, [keyHandler]);
 	return (
 		windows === null
 			? <></> // fallback while the list of windows is loading
