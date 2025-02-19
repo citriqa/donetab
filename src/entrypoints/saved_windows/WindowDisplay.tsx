@@ -6,7 +6,7 @@ import WindowList from "./WindowList";
 export default function WindowDisplay() {
 	const filter = useMemo(() => atom(""), []);
 	return (
-		<div className="flex flex-col m-auto max-h-[100dvh] limit-content-width pp-4">
+		<div className="flex flex-col m-auto limit-content-width pp-4">
 			<Header filter={filter} />
 			<WindowList filter={filter} />
 		</div>
